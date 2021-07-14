@@ -1,3 +1,4 @@
+import { _USERS_ } from './tests.utils';
 import { form } from '..';
 
 describe('form()', () => {
@@ -22,48 +23,46 @@ describe('form()', () => {
     });
 
     it('saves initial values', () => {
-      expect(form({ username: 'piotr', code: 2234 }).values).toEqual({
-        username: 'piotr',
-        code: 2234,
-      });
-      expect(form({ username: 'piotr' }).values).toEqual({ username: 'piotr' });
+      expect(form(_USERS_[0]).values).toEqual(_USERS_[0]);
+      expect(form(_USERS_[1]).values).toEqual(_USERS_[1]);
     });
 
     it('saves validators for later usage', () => {
       const usernameFns = [(value: string) => value !== ''];
 
-      expect(form({ username: '' }, { username: usernameFns }).fns).toEqual({
+      expect(form(_USERS_[2], { username: usernameFns }).fns).toEqual({
         username: usernameFns,
       });
     });
 
     it('assigns empty object literal for empty fns parameter', () => {
-      expect(form({ username: '' }, {}).fns).toEqual({});
+      expect(form(_USERS_[2], {}).fns).toEqual({});
     });
 
     it('sets errors as object with boolean values', () => {
-      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
+      const loginForm = form(_USERS_[2], { username: [(value) => value === ''] });
 
       expect(loginForm.errors).toEqual({
         username: true,
         code: false,
+        phone: false,
       });
     });
 
     it('sets invalid state', () => {
-      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
+      const loginForm = form(_USERS_[2], { username: [(value) => value === ''] });
 
       expect(loginForm.invalid).toBe(true);
     });
 
     it('sets touched state', () => {
-      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
+      const loginForm = form(_USERS_[2], { username: [(value) => value === ''] });
 
       expect(loginForm.touched).toBe(false);
     });
 
     it('sets dirty state', () => {
-      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
+      const loginForm = form(_USERS_[2], { username: [(value) => value === ''] });
 
       expect(loginForm.dirty).toBe(false);
     });

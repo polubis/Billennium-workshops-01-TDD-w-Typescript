@@ -386,6 +386,39 @@ describe('throws error for', () => {
 - Możemy pozbyć się w testach jawnego określenia wartości jako `any` z powodu `mapped types` i dokładniejszego otypowania obiektu `fns`.
 - W funkcji `form` rzutujemy sobie na `any` dla większej wygody testowania. W trybie `strict` kompilator TypeScript bedzie rzucał errory przy jakiejkolwiek niespójności. Później zamienimy to `any` na deklaracje w oparciu o prawdziwy interfejs.
 
+### (6 commit) Refactor current tests to be more intuitive and more scalable
+
+Aktualnie mamy spory problem z tworzeniem mocków do naszych testów. Aby ułatwić sposób tworzenia mocków wykorzystamy wzorzec `builder`.
+Nasz builder zajmie się tworzeniem dedykowanych obiektów typu `User` ustawiając domyślne wartości podczas 1 wywołania, a następnie
+udostępni nam możliwość zmiany poszczególnych pól według upodobania.
+
+```ts
+interface User {
+  username: string;
+  phone: string;
+  code: number;
+}
+
+const createUser = (): User => ({
+  username: 'piotr1994',
+  phone: '999 229 323',
+  code: 2232,
+});
+
+const userBuilder = (user = createUser()) => ({
+  valueOf: () => user,
+  setUsername: (username: User['username']) => userBuilder({ ...user, username }),
+  setPhone: (phone: User['phone']) => userBuilder({ ...user, phone }),
+  setCode: (code: User['code']) => userBuilder({ ...user, code }),
+});
+
+export const _USERS_ = [
+  userBuilder(),
+  userBuilder().setUsername('piotr'),
+  userBuilder().setUsername(''),
+].map((builder) => builder.valueOf());
+```
+
 ## Podsumowanie
 
 To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.
