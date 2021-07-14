@@ -2,61 +2,70 @@ import { form } from '..';
 
 describe('form()', () => {
   describe('in setup phase', () => {
-    it('throws on invalid initial values', () => {
-      const _PROBES_ = [null, undefined, 1, '', [], true, Symbol('')];
+    describe('throws error for', () => {
+      it('primitives', () => {
+        expect(() => form(1 as any)).toThrow();
+        expect(() => form('' as any)).toThrow();
+        expect(() => form(null as any)).toThrow();
+        expect(() => form(undefined as any)).toThrow();
+        expect(() => form(Symbol('') as any)).toThrow();
+      });
 
-      _PROBES_.forEach((probe) => {
-        expect(() => form(probe as any)).toThrow();
+      it('all other ref types except object', () => {
+        expect(() => form([] as any)).toThrow();
+        expect(() => form(() => '' as any)).toThrow();
       });
     });
 
-    // it('saves initial values', () => {
-    //   const _PROBES_ = [
-    //     [
-    //       { username: 'piotr', code: 2234 },
-    //       { username: 'piotr', code: 2234 },
-    //     ],
-    //     [{ username: 'piotr' }, { username: 'piotr' }],
-    //   ];
+    it('accepts objects as initial values', () => {
+      expect(() => form({})).not.toThrow();
+    });
 
-    //   _PROBES_.forEach(([probe, result]) => {
-    //     expect(form(probe).values).toEqual(result);
-    //   });
-    // });
+    it('saves initial values', () => {
+      expect(form({ username: 'piotr', code: 2234 }).values).toEqual({
+        username: 'piotr',
+        code: 2234,
+      });
+      expect(form({ username: 'piotr' }).values).toEqual({ username: 'piotr' });
+    });
 
-    // it('saves validators', () => {
-    //   const loginForm = form({ username: '' }, { username: [(value: any) => value !== ''] });
+    it('saves validators for later usage', () => {
+      const usernameFns = [(value: string) => value !== ''];
 
-    //   expect(loginForm.fns).toEqual({
-    //     username: [(value: any) => value !== ''],
-    //   });
-    // });
+      expect(form({ username: '' }, { username: usernameFns }).fns).toEqual({
+        username: usernameFns,
+      });
+    });
 
-    // it('sets validation result', () => {
-    //   const loginForm = form({ username: '', code: 222 }, { username: [(value: any) => value !== ''] });
+    it('assigns empty object literal for empty fns parameter', () => {
+      expect(form({ username: '' }, {}).fns).toEqual({});
+    });
 
-    //   expect(loginForm.errors).toEqual({
-    //     username: true,
-    //     code: false,
-    //   });
-    // });
+    it('sets errors as object with boolean values', () => {
+      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
 
-    // it('sets invalid state', () => {
-    //   const loginForm = form({ username: '', code: 222 }, { username: [(value: any) => value !== ''] });
+      expect(loginForm.errors).toEqual({
+        username: true,
+        code: false,
+      });
+    });
 
-    //   expect(loginForm.invalid).toBe(true);
-    // });
+    it('sets invalid state', () => {
+      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
 
-    // it('sets touched state', () => {
-    //   const loginForm = form({ username: '', code: 222 }, { username: [(value: any) => value !== ''] });
+      expect(loginForm.invalid).toBe(true);
+    });
 
-    //   expect(loginForm.touched).toBe(false);
-    // });
+    it('sets touched state', () => {
+      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
 
-    // it('sets dirty state', () => {
-    //   const loginForm = form({ username: '', code: 222 }, { username: [(value: any) => value !== ''] });
+      expect(loginForm.touched).toBe(false);
+    });
 
-    //   expect(loginForm.dirty).toBe(false);
-    // });
+    it('sets dirty state', () => {
+      const loginForm = form({ username: '', code: 222 }, { username: [(value) => value === ''] });
+
+      expect(loginForm.dirty).toBe(false);
+    });
   });
 });

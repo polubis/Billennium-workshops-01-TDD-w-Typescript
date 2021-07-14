@@ -11,11 +11,15 @@ export type Fns<V> = {
   [K in keyof V]?: Fn<V[K]>[];
 };
 
+export type Errors<V extends Dictionary> = {
+  [K in keyof V]: boolean;
+};
+
 /*
   Model danych.
 */
 export interface FormData<V extends Dictionary> {
-  errors: any;
+  errors: Errors<V>;
   dirty: boolean;
   fns: Fns<V>;
   invalid: boolean;

@@ -299,7 +299,7 @@ export interface Formable<V extends Dictionary> {
 /*
   Obydwie funkcje zajmą się kolejno stworzeniem błędu oraz jego rzuceniem w przypadku nie właściwych wartości początkowych
   Jest to o tyle istotne, że automatycznie daje sygnał komuś, że wykorzystuje API biblioteki w niewłaściwy sposób.
-  Niestety można również przekazać do naszego komponentu również wartości po assercji dlatego wypada dopisać 
+  Niestety można również przekazać do naszego komponentu również wartości po assercji dlatego wypada dopisać
   testy.
 */
 // index.ts
@@ -325,6 +325,66 @@ it('throws on invalid initial values', () => {
   });
 });
 ```
+
+### (5 commit) Finish whole initialization of form
+
+W celu przyśpieszenia napiszemy implementację do całego procesu inicjalizacji formularza za jednym razem.
+
+W tym commicie z ważniejszych rzeczy to:
+
+- Unikajcie definiowania tablicy wartości i iterowania po nich. Definicje błędów w zwracane przez `jest` są wtedy bardzo nieczytelne.
+  Znacznie lepiej jest zduplikować trochę kodu, ale posiadać za to czytelny error message w konsoli.
+
+```ts
+// DONT DO
+const _PROBES_ = [null, undefined, 1, '', [], true, Symbol('')];
+// DO
+expect(() => form(probe as any)).toThrow();
+```
+
+- Dodaliśmy precyzyjniejszą definijcę typów dla naszych walidatorów. Teraz nie ma możliwości przekazania kluczy innych
+  niż te, które są zdefiniowane w obiekcie wartości początkowych, dodatkowo funkcje muszą zwracać rezultat `boolean`.
+
+```ts
+export const form = <V extends Dictionary>(initValues: V, fns: Fns<V> = {}): Form<V> => {
+  // ...
+};
+```
+
+- Warto też zaznaczyć, że `hard codujemy` algorytm wyznaczania błędów co jest na chwile obecną nie zgodne z założeniami .Jednak w celu pokazania łatwiejszego refactoru, pozwoliłem sobie na to małe uproszczenie. Później zostanie to zmienione.
+- Dodatkowo ważno zaznaczyć, przekształciliśmy testy, które wcześniej napisaliśmy jako jedno wywołanie na kilka nowych testów, które odrazu opisują problem w momencie failowania.
+
+```ts
+/*
+  Zamiast dodawać asercję w teście wyżej, tworzymy nowy, który
+  odrazu informuje nas o tym co je nie tak w momencie failu.
+*/
+it('assigns empty object literal for empty fns parameter', () => {
+  expect(form({ username: '' }, {}).fns).toEqual({});
+});
+
+/*
+  Ten sam mechanizm stosujemy w przypadku innych podobnych testów. Teraz mamy jednoznaczny podział i informacje jakie
+  wartości powinny być przepuszczane przez walidator, a jakie nie.
+*/
+describe('throws error for', () => {
+  it('primitives', () => {
+    expect(() => form(1 as any)).toThrow();
+    expect(() => form('' as any)).toThrow();
+    expect(() => form(null as any)).toThrow();
+    expect(() => form(undefined as any)).toThrow();
+    expect(() => form(Symbol('') as any)).toThrow();
+  });
+
+  it('all other ref types except object', () => {
+    expect(() => form([] as any)).toThrow();
+    expect(() => form(() => '' as any)).toThrow();
+  });
+});
+```
+
+- Możemy pozbyć się w testach jawnego określenia wartości jako `any` z powodu `mapped types` i dokładniejszego otypowania obiektu `fns`.
+- W funkcji `form` rzutujemy sobie na `any` dla większej wygody testowania. W trybie `strict` kompilator TypeScript bedzie rzucał errory przy jakiejkolwiek niespójności. Później zamienimy to `any` na deklaracje w oparciu o prawdziwy interfejs.
 
 ## Podsumowanie
 
