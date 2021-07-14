@@ -1,0 +1,37 @@
+{
+  "name": "io-form",
+  "version": "1.0.0",
+  "description": "Standalone forms, validation management library which can be used on server/client.",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc --declaration",
+    "test": "jest",
+    "test-coverage": "jest --coverage",
+    "test-watch": "jest --watch",
+    "test-watch-silent": "jest --watch --silent",
+    "lint": "eslint . --ext .ts",
+    "lint-and-fix": "eslint . --ext .ts --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polubis/BIllennium-workshops-01-TDD-w-Typescript.git"
+  },
+  "author": "Adrian Połubiński",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/polubis/BIllennium-workshops-01-TDD-w-Typescript/issues"
+  },
+  "homepage": "https://github.com/polubis/BIllennium-workshops-01-TDD-w-Typescript#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^27.0.6",
+    "prettier": "^2.3.2",
+    "ts-jest": "^27.0.3",
+    "tsdoc": "0.0.4",
+    "typescript": "^4.3.5"
+  }
+}
