@@ -31,8 +31,8 @@ export interface FormData<V extends Dictionary> {
   Kontrakt obsługi przejścia z jednego stanu w drugi oraz modyfikacji danych.
 */
 export interface Formable<V extends Dictionary> {
-  next(): Form<V>;
-  set(): void;
+  next(patchedValues: Partial<V>): Form<V>;
+  set(patchedValues: Partial<V>): void;
   submit(): void;
   check(): any;
 }

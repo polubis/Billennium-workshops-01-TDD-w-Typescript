@@ -419,6 +419,11 @@ export const _USERS_ = [
 ].map((builder) => builder.valueOf());
 ```
 
+### (7 commit) Add tests suites for set() and next()
+
+W tym commicie dodaliśmy testy, które są puste i testują 2 metody `set()` oraz `next()`. Dodatkowo uzupełniliśmy definicje typów
+oraz dodaliśmy implementacje metod w taki sposób, że rzuca ona wyjątek. W następnym commicie dodamy definicje testów oraz zaczniemy pisać implementacje, która sprawia, że testy przechodzą. Zwróć uwagę, że testy oraz ich tytuły się powtarzają. Zajmiemy się tym później. Teraz interesuje nas 1 wersja działającego kodu, a na samym końcu zajmiemy się refactorem testów oraz implementacji.
+
 ## Podsumowanie
 
 To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.

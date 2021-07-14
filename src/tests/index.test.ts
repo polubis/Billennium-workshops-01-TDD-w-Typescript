@@ -67,4 +67,44 @@ describe('form()', () => {
       expect(loginForm.dirty).toBe(false);
     });
   });
+
+  describe('after setup phase', () => {
+    describe('set()', () => {
+      describe('throws error for', () => {
+        it('primitives', () => {});
+
+        it('all other ref types except object', () => {});
+      });
+
+      it('sets partial values', () => {});
+
+      it('runs validation after set', () => {});
+
+      it('sets invalid property', () => {});
+
+      it('sets errors as object with boolean values', () => {});
+
+      it('sets touched property', () => {});
+    });
+
+    describe('next()', () => {
+      describe('throws error for', () => {
+        it('primitives', () => {});
+
+        it('all other ref types except object', () => {});
+      });
+
+      it('sets partial values', () => {});
+
+      it('runs validation after set', () => {});
+
+      it('sets invalid property', () => {});
+
+      it('sets errors as object with boolean values', () => {});
+
+      it('sets touched property', () => {});
+
+      it('clones form object', () => {});
+    });
+  });
 });

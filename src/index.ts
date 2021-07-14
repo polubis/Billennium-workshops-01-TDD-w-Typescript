@@ -40,5 +40,11 @@ export const form = <V extends Dictionary>(initValues: V, fns: Fns<V> = {}): For
     fns,
     dirty,
     touched,
+    set: (patchedValues: Partial<V>) => {
+      throw new Error('Not implemeted');
+    },
+    next: (patchedValues: Partial<V>) => {
+      throw new Error('Not implemeted');
+    },
   } as any;
 };
