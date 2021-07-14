@@ -37,7 +37,6 @@ it('adds 2 numbers', () => {
   expect(sum(2, 4)).toBe(6);
 });
 
-
 // TAK ROBIMY W TDD
 it('adds 2 numbers', () => {
   expect(sum(2, 4)).toBe(6);
@@ -272,11 +271,60 @@ Dodatkowo zostały dodane podstawowe modele, które spełniają nasze API. Nasze
 na bardziej precyzyjne - np. generyczne bądź wykorzystujące mapped types. Póki taka definicja typów wystarczy, aby pisać testy
 i nie dostawać komunikatów o błędach ts'a przy uruchamianiu.
 
-> Komunikaty o błedach dotyczących typowania zależą od konfiguracji `jest` oraz `typescripta`. 
+> Komunikaty o błedach dotyczących typowania zależą od konfiguracji `jest` oraz `typescripta`.
 
 Rezultatem będą failujące testy po uruchomieniu polecania `npm run test-watch`.
 
 ![](assets/3.gif)
+
+### (4 commit) Write values shape validator
+
+Zakomentowałem resztę testów w celu pokazania kolejności developmentu.
+
+W tym commicie otypowaliśmy bardziej "dokładnie" to czym mają być poszczególne właściwości naszego obiektu.
+
+```ts
+/*
+    Dzieki temu zabiegowi gwarantujemy, że typ generyczny przekazany do interfejsu Formable musi byc obiektem
+    Niestety np. null wpisany ręcznie przejdzie lub asercja więc musimy zabezpieczyć się przed tym w runtime.
+*/
+// defs.ts
+export interface Formable<V extends Dictionary> {
+  next(): Form<V>;
+  set(): void;
+  submit(): void;
+  check(): any;
+}
+
+/*
+  Obydwie funkcje zajmą się kolejno stworzeniem błędu oraz jego rzuceniem w przypadku nie właściwych wartości początkowych
+  Jest to o tyle istotne, że automatycznie daje sygnał komuś, że wykorzystuje API biblioteki w niewłaściwy sposób.
+  Niestety można również przekazać do naszego komponentu również wartości po assercji dlatego wypada dopisać 
+  testy.
+*/
+// index.ts
+const buildError = (reason: string, message: string): Error => {
+  return new Error(`[${reason}]: ${message}`);
+};
+
+const validateValuesShape = (values: any): void => {
+  if (!values || typeof values !== 'object') {
+    throw buildError('VALUES_SHAPE, 'Values parameter must be an object');
+  }
+};
+
+/*
+  Wykonując rzutowanie przepychamy dowolną wartość i sprawdzamy jak zachowa się nasz kod.
+*/
+// index.test.ts
+it('throws on invalid initial values', () => {
+  const _PROBES_ = [null, undefined, 1, '', [], true, Symbol('')];
+
+  _PROBES_.forEach((probe) => {
+    expect(() => form(probe as any)).toThrow();
+  });
+});
+```
 
 ## Podsumowanie
 

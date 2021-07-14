@@ -1,5 +1,17 @@
-import { Form } from './defs';
+import { Form, Dictionary } from './defs';
 
-export const form = (value: any, fns?: any): Form => {
-  throw new Error('Not implemented exception');
+const buildError = (reason: string, message: string): Error => {
+  return new Error(`[${reason}]: ${message}`);
+};
+
+const validateValuesShape = (values: any): void => {
+  if (!values || typeof values !== 'object') {
+    throw buildError('values shape', 'Values parameter must be an object');
+  }
+};
+
+export const form = <V extends Dictionary>(values: V, fns?: any): Form<V> => {
+  validateValuesShape(values);
+
+  return form<V>(values, fns);
 };
