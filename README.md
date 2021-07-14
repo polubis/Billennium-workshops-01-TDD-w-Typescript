@@ -30,6 +30,28 @@ oraz pilnując konwencji (tak w skrócie).
 
 Podejście w którym najpierw piszemy test, testy. Sprawiamy, aby te testy nie przechodziły, a następnie dopisujemy kod i uruchamiając testy sprawdzamy czy testy przechodzą.
 
+```ts
+// TAK NIE ROBIMY W TDD
+const sum = (a: number, b: number): number => a + b;
+it('adds 2 numbers', () => {
+  expect(sum(2, 4)).toBe(6);
+});
+
+
+// TAK ROBIMY W TDD
+it('adds 2 numbers', () => {
+  expect(sum(2, 4)).toBe(6);
+});
+const sum = (a: number, b: number): never => {
+  throw new Error('Not implemented');
+};
+// Uruchamiamy testy
+// Test run failed
+// Piszemy poprawną implementację
+const sum = (a: number, b: number): number => a + b;
+// Testy przechodzą
+```
+
 ### Kiedy używać ?
 
 - Dla mało doświadczonych devów tylko na testach jednostkowych.
@@ -76,15 +98,9 @@ Poniżej przykład różniącego się API do obsługi formularzy oraz modeli:
 ```ts
 // VALIDATION SCHEMA
 const SignupSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, "Too Short!")
-    .max(50, "Too Long!")
-    .required("Required"),
-  lastName: Yup.string()
-    .min(2, "Too Short!")
-    .max(50, "Too Long!")
-    .required("Required"),
-  email: Yup.string().email("Invalid email").required("Required"),
+  firstName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
+  lastName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
+  email: Yup.string().email('Invalid email').required('Required'),
 });
 
 // COMPONENT AND USAGE
@@ -93,9 +109,9 @@ export const ValidationSchemaExample = () => (
     <h1>Signup</h1>
     <Formik
       initialValues={{
-        firstName: "",
-        lastName: "",
-        email: "",
+        firstName: '',
+        lastName: '',
+        email: '',
       }}
       validationSchema={SignupSchema}
       onSubmit={(values) => {
@@ -106,13 +122,9 @@ export const ValidationSchemaExample = () => (
       {({ errors, touched }) => (
         <Form>
           <Field name="firstName" />
-          {errors.firstName && touched.firstName ? (
-            <div>{errors.firstName}</div>
-          ) : null}
+          {errors.firstName && touched.firstName ? <div>{errors.firstName}</div> : null}
           <Field name="lastName" />
-          {errors.lastName && touched.lastName ? (
-            <div>{errors.lastName}</div>
-          ) : null}
+          {errors.lastName && touched.lastName ? <div>{errors.lastName}</div> : null}
           <Field name="email" type="email" />
           {errors.email && touched.email ? <div>{errors.email}</div> : null}
           <button type="submit">Submit</button>
@@ -126,24 +138,24 @@ export const ValidationSchemaExample = () => (
 ### Angular
 
 ```ts
-import { Component } from "@angular/core";
-import { FormGroup, FormControl } from "@angular/forms";
-import { Validators } from "@angular/forms";
+import { Component } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+import { Validators } from '@angular/forms';
 
 @Component({
-  selector: "app-profile-editor",
-  templateUrl: "./profile-editor.component.html",
-  styleUrls: ["./profile-editor.component.css"],
+  selector: 'app-profile-editor',
+  templateUrl: './profile-editor.component.html',
+  styleUrls: ['./profile-editor.component.css'],
 })
 export class ProfileEditorComponent {
   profileForm = new FormGroup({
-    firstName: new FormControl("", Validators.required),
-    lastName: new FormControl(""),
+    firstName: new FormControl('', Validators.required),
+    lastName: new FormControl(''),
     address: new FormGroup({
-      street: new FormControl(""),
-      city: new FormControl(""),
-      state: new FormControl(""),
-      zip: new FormControl(""),
+      street: new FormControl(''),
+      city: new FormControl(''),
+      state: new FormControl(''),
+      zip: new FormControl(''),
     }),
   });
 }
@@ -159,37 +171,32 @@ export class ProfileEditorComponent {
 </form>
 
 <p>Complete the form to enable button.</p>
-<button type="submit" [disabled]="!profileForm.valid || profileForm.pristine">
-  Submit
-</button>
+<button type="submit" [disabled]="!profileForm.valid || profileForm.pristine">Submit</button>
 ```
 
 ### NodeJS
 
 ```ts
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from 'express';
 
-import { parseSuccess, BadRequest } from "../utils/response-management";
-import { ScraperService } from "../services";
+import { parseSuccess, BadRequest } from '../utils/response-management';
+import { ScraperService } from '../services';
 
 const ScraperController = express.Router();
 
-ScraperController.get(
-  "/",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      if (!req.query.url) {
-        next(new BadRequest("Url parameter is required"));
-      }
-
-      const result = await ScraperService.scrapUrl(req.query.url as string);
-
-      parseSuccess(result, res);
-    } catch (err) {
-      next(new BadRequest(err));
+ScraperController.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.query.url) {
+      next(new BadRequest('Url parameter is required'));
     }
+
+    const result = await ScraperService.scrapUrl(req.query.url as string);
+
+    parseSuccess(result, res);
+  } catch (err) {
+    next(new BadRequest(err));
   }
-);
+});
 
 export default ScraperController;
 ```
@@ -217,32 +224,59 @@ Pierwsze co w takich przypadkach warto zrobić to stworzyć prostą definicję m
 ```ts
 // Pseudo kod pokazujący sposób działania.
 
-import { form } from 'form'
-import { req, min, max, minLength, maxLength } from "validators";
+import { form } from 'form';
+import { req, min, max, minLength, maxLength } from 'validators';
 
 const loginForm = form(
   {
-    username: "",
-    password: "",
+    username: '',
+    password: '',
   },
-  { username: [req, min(2), max(10), minLength(20), maxLength(30)] }
+  { username: [req, min(2), max(10), minLength(20), maxLength(30)] },
 );
 
-loginForm.set({ username: 'd' }) // patch updates - sets property in form object and runs validation
-loginForm.set({ username: 1 }) // TS ERROR invalid type
+loginForm.set({ username: 'd' }); // patch updates - sets property in form object and runs validation
+loginForm.set({ username: 1 }); // TS ERROR invalid type
 
-loginForm.next() // doing same as set but clones object
+loginForm.next(); // doing same as set but clones object
 
 // f.e in React
 
-this.setState(prevState => ({ loginForm: prevState.loginForm.next({
-    username: e.target.value
-})}))
+this.setState((prevState) => ({
+  loginForm: prevState.loginForm.next({
+    username: e.target.value,
+  }),
+}));
 ```
 
 ## Implementacja biblioteki z uwzględnieniem kolejności developmentu
 
 Rozpoczęcie implementacji od wszystkich commitów poza 1 - inicjalnym. Dodatkowo przy commitach mogą pokazywać się modyfikacje pliku `README.ts` - poprostu te modyfikacje należy ignorować.
+
+### (1 Commit) Initial commit
+
+Stworzenie repo + dodanie kontentu prezentacji do pliku README. Nie istotny z punktu widzenia nauki. Można iść dalej.
+
+### (2 Commit) Add project structure and test configuration
+
+Dodanie potrzebnych zależności jak np. `jest`, `typescript` + setup developerski jak linter, formatter itp.
+
+### (3 commit) Write test scenarios and add basic models
+
+Stworzenie kilku testów, które oczywiście nie przechodzą. Testy piszemy zazwyczaj w grupach albo jeden po drugim w zależności
+od znajomości wymagań i podejścia.
+
+Ten zestaw testów sprawdza inicjalny setup oraz początkowa walidacje, która jest niezbędna do dalszego działania obsługi formularzy.
+
+Dodatkowo zostały dodane podstawowe modele, które spełniają nasze API. Nasze modele będa się zmieniać podczas implementacji
+na bardziej precyzyjne - np. generyczne bądź wykorzystujące mapped types. Póki taka definicja typów wystarczy, aby pisać testy
+i nie dostawać komunikatów o błędach ts'a przy uruchamianiu.
+
+> Komunikaty o błedach dotyczących typowania zależą od konfiguracji `jest` oraz `typescripta`. 
+
+Rezultatem będą failujące testy po uruchomieniu polecania `npm run test-watch`.
+
+![](assets/3.gif)
 
 ## Podsumowanie
 
