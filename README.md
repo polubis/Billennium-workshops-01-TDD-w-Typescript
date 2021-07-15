@@ -495,13 +495,14 @@ const testPrimitivesExceptionThrow = (creator: (arg: any) => any): void => {
 ```
 
 Przed rozpoczęciem refactoru testów i tworzeniem funkcji jak wyżej weż pod uwagę:
-a) Wady:
 
-- Weż pod uwagę dodatkową warstwe abstrakcji, w której możesz się pomylić i spowodować failowanie testów pomimo, iż implementacja jest prawdiłowa.
+a) Wady:
+- Dodatkową warstwe abstrakcji, w której możesz się pomylić i spowodować failowanie testów pomimo, iż implementacja jest prawdiłowa.
 - Mniej czytelne komunikaty błędów.
 - Większy próg wejścia dla mniej doświadczonych devów.
 - Ryzyko wywalenia większej liczby testów w razie pomyłki.
-  b) Zalety:
+
+b) Zalety:
 - Mniej kodu,
 - Testowanie w 100% tego jak coś działa, a nie szczegółów implementacji jest o wiele łatwiejsze. Przykładowo moglibyśmy sobie dodać
   `jest.fn` i zamockować nasz `set` w obiekcie `form`. Tak naprawdę przetestowali byśmy integrację wewnątrzną komponentu z metodą `set` i to czy
@@ -587,6 +588,154 @@ Z ważniejszych rzeczy:
 - Dopisaliśmy test integracyjny, który testuje nasz moduł w całościowym kontekście.
 
 Została nam tylko integracja z `React` oraz `Angular` plus drobne poprawki na koniec.
+
+### (13 commit) Add React adapter POC
+
+Jak mogłyby wyglądać potencjalne testy + implementacja adaptera pod `React`?. Mając API gwarantujące `immutability` oraz
+wykorzystujące `chaining` jesteśmy wstanie napisać adapter bardzo szybko jak i również testy.
+
+```tsx
+// React adapter tests POC
+import { renderHook } from '@testing-library/react-hooks';
+import { useForm } from './useForm';
+
+import { form } from 'io-form';
+
+// Mockujemy cały moduł. Nie zwracamy uwagi czy działa poprawnie czy nie.
+// Interesuje nas tylko proces komunikacji pomiędzy API React, API biblioteki.
+jest.mock('io-form', () => ({
+  form: () => ({
+    next: () => {},
+    submit: () => {},
+  }),
+}));
+
+describe('useForm()', () => {
+  describe('handleChange()', () => {
+    it('updates form state via form API', () => {
+      const { result } = renderHook(() => Form.useManager(_CONFIG_));
+
+      act(() => {
+        result[1]({});
+      });
+
+      expect(form.next).toHaveBeenCalled();
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+});
+```
+
+```tsx
+// React adapter POC
+import { form, Form, Dictionary } from 'io-form';
+
+const useForm = <V extends Dictionary, R = boolean>(initValues: V, fns?: Fns<V, R>): [] => {
+  const [formState, setFormState] = useState(form(initValues, fns));
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
+    // Support for lower than 17.0 synthetic event performance improvements
+    const name = e.target.name;
+    const value = e.target.value;
+
+    setFormState((prevFormState) =>
+      prevFormState.next({
+        [name]: value,
+      }),
+    );
+  }, []);
+
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>): void => {
+    setFormState((prevFormState) => prevFormState.submit(e));
+  }, []);
+
+  const { ...formData, set, next, check, submit } = formState;
+
+  return [formData, handleChange, handleSubmit];
+};
+
+// React adapter usage in dedicated form
+import React, { useState, FC } from 'react';
+import { NavLink } from 'react-router-dom';
+
+import { Button, InputField } from 'ui';
+
+import { useForm } from 'io-form-react';
+import { required, minLength, maxLength, min, max } from 'io-validators';
+
+import csx from './UserForm.scss';
+
+interface UserFormData {
+  username: string;
+  code: number | null;
+  phone: string;
+}
+
+const initData = (): UserFormData => ({
+  username: '',
+  code: null,
+  phone: '',
+});
+
+const VALIDATORS = {
+  username: [required, minLength(8), maxLength(20)],
+  code: [required, min(1000), max(9999)],
+  phone: [required, minLength(9), maxLength(9)],
+};
+
+const UserForm: FC = () => {
+  const [data, change, submit] = useForm(initData(), VALIDATORS);
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      submit(e);
+    },
+    [values],
+  );
+
+  const { dirty, invalid, touched, values, errors } = data;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <InputField
+        data-key="username"
+        label="Username"
+        placeholder="Username..."
+        error={touched ? (errors.username ? 'Invalid username format' : '') : ''}
+        value={values.username}
+        onChange={change}
+      />
+
+      <InputField
+        data-key="code"
+        label="Code"
+        placeholder="xxxx"
+        error={touched ? (errors.code ? 'Invalid code format' : '') : ''}
+        value={values.phone}
+        onChange={change}
+      />
+
+      <InputField
+        data-key="phone"
+        label="Phone"
+        placeholder="xxx xxx xxx"
+        error={touched ? (errors.phone ? 'Invalid phone format' : '') : ''}
+        value={values.phone}
+        onChange={change}
+      />
+
+      <Button type="submit" disabled={dirty && invalid}>
+        SUBMIT
+      </Button>
+    </form>
+  );
+};
+
+export default LoginForm;
+```
 
 ## Podsumowanie
 
