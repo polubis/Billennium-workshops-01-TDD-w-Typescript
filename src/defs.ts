@@ -5,51 +5,51 @@
 
 export type Dictionary = Record<string, any>;
 
-export type Fn<V> = (value: V) => boolean;
+export type Fn<V, R> = (value: V) => R;
 
-export type Fns<V> = {
-  [K in keyof V]?: Fn<V[K]>[];
+export type Fns<V, R> = {
+  [K in keyof V]?: Fn<V[K], R>[];
 };
 
-export type Errors<V extends Dictionary> = {
-  [K in keyof V]: boolean;
+export type Errors<V extends Dictionary, R> = {
+  [K in keyof V]: R;
 };
 
 export interface SubmitEvent {
   preventDefault: () => void;
 }
 
-export type CheckResultStrategy<V extends Dictionary> = (values: V, fns: Fns<V>) => CheckResult<V>;
+export type CheckResultStrategy<V extends Dictionary, R> = (values: V, fns: Fns<V, R>) => CheckResult<V, R>;
 
-export interface CheckResult<V extends Dictionary> {
+export interface CheckResult<V extends Dictionary, R> {
   invalid: boolean;
-  errors: Errors<V>;
+  errors: Errors<V, R>;
 }
 
 /*
   Model danych.
 */
-export interface FormData<V extends Dictionary> extends CheckResult<V> {
+export interface FormData<V extends Dictionary, R> extends CheckResult<V, R> {
   dirty: boolean;
-  fns: Fns<V>;
+  fns: Fns<V, R>;
   touched: boolean;
   values: V;
 }
 
-export interface InitFormData<V extends Dictionary>
-  extends Pick<FormData<V>, 'dirty' | 'fns' | 'values' | 'touched'> {}
+export interface InitFormData<V extends Dictionary, R>
+  extends Pick<FormData<V, R>, 'dirty' | 'fns' | 'values' | 'touched'> {}
 
 /*
   Kontrakt obsługi przejścia z jednego stanu w drugi oraz modyfikacji danych.
 */
-export interface Formable<V extends Dictionary> {
-  next(patchedValues: Partial<V>): Form<V>;
+export interface Formable<V extends Dictionary, R> {
+  next(patchedValues: Partial<V>): Form<V, R>;
   set(patchedValues: Partial<V>): void;
-  submit(e?: SubmitEvent): Form<V>;
-  check(): CheckResult<V>;
+  submit(e?: SubmitEvent): Form<V, R>;
+  check(): CheckResult<V, R>;
 }
 
 /*
   Całosciowy model biblioteki.
 */
-export type Form<V extends Dictionary> = FormData<V> & Formable<V>;
+export type Form<V extends Dictionary, R> = FormData<V, R> & Formable<V, R>;

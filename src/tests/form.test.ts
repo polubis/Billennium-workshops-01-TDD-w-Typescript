@@ -1,5 +1,5 @@
 import { _SIMPLE_USER_, _VALID_USER_, _INVALID_USER_, userBuilder } from './tests.utils';
-import { form } from '..';
+import { form } from '../form';
 import { SubmitEvent } from '../defs';
 
 describe('form()', () => {
@@ -230,5 +230,66 @@ describe('form()', () => {
         phone: false,
       });
     });
+  });
+
+  it('goes through full update, validation, submit process', () => {
+    const userFns = {
+      username: [(value: string) => value === ''],
+      code: [(value: number) => value < 1000],
+    };
+    const userForm = form(_SIMPLE_USER_, userFns);
+
+    // INIT PHASE
+    expect(userForm.dirty).toBeFalsy();
+    expect(userForm.invalid).toBeFalsy();
+    expect(userForm.errors).toEqual({
+      username: false,
+      code: false,
+      phone: false,
+    });
+    expect(userForm.values).toEqual(_SIMPLE_USER_);
+    expect(userForm.fns).toEqual(userFns);
+
+    // UPDATE PHASE FOR INVALID VALUES
+
+    userForm.set(_INVALID_USER_);
+
+    expect(userForm.dirty).toBeFalsy();
+    expect(userForm.invalid).toBeTruthy();
+    expect(userForm.errors).toEqual({
+      username: true,
+      code: false,
+      phone: false,
+    });
+    expect(userForm.values).toEqual(_INVALID_USER_);
+    expect(userForm.fns).toEqual(userFns);
+
+    // UPDATE PHASE FOR VALID
+
+    userForm.set(_VALID_USER_);
+
+    expect(userForm.dirty).toBeFalsy();
+    expect(userForm.invalid).toBeFalsy();
+    expect(userForm.errors).toEqual({
+      username: false,
+      code: false,
+      phone: false,
+    });
+    expect(userForm.values).toEqual(_VALID_USER_);
+    expect(userForm.fns).toEqual(userFns);
+
+    // SUBMIT PHASE
+
+    const submittedUserForm = userForm.submit();
+
+    expect(submittedUserForm.dirty).toBeTruthy();
+    expect(userForm.invalid).toBeFalsy();
+    expect(userForm.errors).toEqual({
+      username: false,
+      code: false,
+      phone: false,
+    });
+    expect(userForm.values).toEqual(_VALID_USER_);
+    expect(userForm.fns).toEqual(userFns);
   });
 });

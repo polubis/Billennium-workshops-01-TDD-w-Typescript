@@ -571,6 +571,23 @@ Pozostaje nam zrobienie jeszcze kilku rzeczy.
 - Musimy oddelegować mechanizm tworzenia różnych typów formularzu do jakiejś `fabryki` bądź `buildera`.
 - Zrobić integrację z Angularem i Reactem wykorzystując TDD.
 
+### (12 commit) Add option to apply generic value for errors object
+
+Poprzednio mogliśmy tylko zwracać rezultaty o typie `boolean`. Teraz po drobnych poprawkach i zmianie definicji typów (dodaniu nowego
+parametru generycznego R), możemy przypisywać dowolne wartości do pól obiektu `errors`.
+
+```ts
+export const form = formBuilder<boolean>(booleanStrategy);
+```
+
+Z ważniejszych rzeczy:
+
+- Zmieniliśmy nazwy plików. Teraz cała logika tworzenia obsługi formularzy jest zamknięta w pliku `formBuilder.ts`.
+- Konkretne implementacje będa dodawane w osobnych plikach razem z algorytmem obsługującym potrzebną logikę.
+- Dopisaliśmy test integracyjny, który testuje nasz moduł w całościowym kontekście.
+
+Została nam tylko integracja z `React` oraz `Angular` plus drobne poprawki na koniec.
+
 ## Podsumowanie
 
 To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.
