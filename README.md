@@ -424,6 +424,28 @@ export const _USERS_ = [
 W tym commicie dodaliśmy testy, które są puste i testują 2 metody `set()` oraz `next()`. Dodatkowo uzupełniliśmy definicje typów
 oraz dodaliśmy implementacje metod w taki sposób, że rzuca ona wyjątek. W następnym commicie dodamy definicje testów oraz zaczniemy pisać implementacje, która sprawia, że testy przechodzą. Zwróć uwagę, że testy oraz ich tytuły się powtarzają. Zajmiemy się tym później. Teraz interesuje nas 1 wersja działającego kodu, a na samym końcu zajmiemy się refactorem testów oraz implementacji.
 
+### (8 commit) Implement tests and implementation for set(), next() methods
+
+Na samym początku dopiszemy kod do testów, który ma przetestować działanie powyższych metod. Z racji tego, że są one nie zaimplementowane
+testy będą failować. Dodatkowo przed tym zrobimy mały refactor naszych mocków użytkownika. Używanie `USERS[2]` jest dosyć ryzykowne.
+Wystarczy zmiana kolejności w tablicy `users` i mamy połowe testów wywalonych. Dlatego stworzymy sobie konkretne zmienne i to je będziemy
+wykorzystywać w kodzie zamiast `magic numbers`.
+
+Z ważniejszych rzeczy w tym commicie:
+
+- Stworzenie nowego modelu `InitFormData`, który pozwoli nam uniknąć przekazywania całego obiektu podczas tworzenia formularza. Robimy to po to, aby spełnić zasadę `Interface segregation` z `SOLID`.
+- Wydzielenie funkcji tworzącej formularz `createForm` - `factory function`, która ma za zadanie dokonywać walidacji i przyjąć inicjalne wartości. Dodatkowo pozwala na nadpisanie takich pól jak `invalid`, `fns` czy `values`.
+
+```ts
+// Możemy powtarzalną logikę w tym miejscu i stworzyć kilka wariantów naszego formularza później.
+const createForm = <V extends Dictionary>(initFormData: InitFormData<V>): Form<V>
+```
+
+- Łatwo można też zauważyć, że możemy robić dowolny refactor. Ciągle uruchamiające się testy informują nas o tym czy czegoś nie popsuliśmy.
+- Użyliśmy `value accessor get()` - do pobierania informacji o zmienionych wartościach wewnątrz funkcji. Ponieważ po zwróceniu obiektu
+  tworzy się `closure` zawsze będziemy mieć starą wartość, nawet po jej modyfikacji poprzez funkcję. Żeby tego uniknąć tworzymy getter, który jest funkcją. Chroni nas to również przed czymś takim jak: `form.values = { jakasWartosc: '' }`. W tym przypadku nadpiszemy getter, a nie obiekt wewnątrz funkcji.
+- Również warto zwrócić uwagę na duplikowaną zawartość testów. Można to usprawnić jednak to czy warto i jakie konsekwencje to może mieć sprawdzimy w następnym commicie.
+
 ## Podsumowanie
 
 To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.

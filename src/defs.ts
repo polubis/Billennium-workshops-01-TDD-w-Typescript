@@ -27,6 +27,9 @@ export interface FormData<V extends Dictionary> {
   values: V;
 }
 
+export interface InitFormData<V extends Dictionary>
+  extends Pick<FormData<V>, 'dirty' | 'fns' | 'values' | 'touched'> {}
+
 /*
   Kontrakt obsługi przejścia z jednego stanu w drugi oraz modyfikacji danych.
 */

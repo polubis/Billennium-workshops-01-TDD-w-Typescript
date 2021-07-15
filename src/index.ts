@@ -1,4 +1,4 @@
-import { Form, Dictionary, Fns, Errors } from './defs';
+import { Form, Dictionary, Fns, Errors, FormData, InitFormData } from './defs';
 
 const buildError = (reason: string, message: string): Error => {
   return new Error(`[${reason}]: ${message}`);
@@ -24,27 +24,70 @@ const generateErrors = <V extends Dictionary>(values: V, fns: Fns<V>): Errors<V>
   }, {} as Errors<V>);
 };
 
-export const form = <V extends Dictionary>(initValues: V, fns: Fns<V> = {}): Form<V> => {
-  validateValuesShape(initValues);
+const isFormInvalid = <V extends Dictionary>(errors: Errors<V>): boolean =>
+  Object.keys(errors).some((key) => errors[key]);
 
-  let values = { ...initValues };
+
+// Factory function
+const createForm = <V extends Dictionary>(initFormData: InitFormData<V>) => {
+  validateValuesShape(initFormData.values);
+
+  let fns = initFormData.fns;
+  let values = { ...initFormData.values };
   let errors = generateErrors(values, fns);
-  let invalid = Object.keys(errors).some((key) => errors[key]);
+  let invalid = isFormInvalid(errors);
   let dirty = false;
-  let touched = false;
+  let touched = initFormData.touched;
+
+  const handleSet = (patchedValues: Partial<V>): void => {
+    validateValuesShape(patchedValues);
+
+    values = { ...values, ...patchedValues };
+    errors = generateErrors(values, fns);
+    invalid = isFormInvalid(errors);
+    touched = true;
+  };
+
+  const handleNext = (patchedValues: Partial<V>): Form<V> => {
+    handleSet(patchedValues);
+
+    return createForm({
+      fns,
+      values,
+      dirty,
+      touched,
+    });
+  };
 
   return {
-    values,
-    errors,
-    invalid,
-    fns,
-    dirty,
-    touched,
-    set: (patchedValues: Partial<V>) => {
-      throw new Error('Not implemeted');
+    get values() {
+      return values;
     },
-    next: (patchedValues: Partial<V>) => {
-      throw new Error('Not implemeted');
+    get errors() {
+      return errors;
     },
+    get invalid() {
+      return invalid;
+    },
+    get fns() {
+      return fns;
+    },
+    get dirty() {
+      return dirty;
+    },
+    get touched() {
+      return touched;
+    },
+    set: handleSet,
+    next: handleNext,
   } as any;
+};
+
+export const form = <V extends Dictionary>(initValues: V, initFns: Fns<V> = {}): Form<V> => {
+  return createForm({
+    touched: false,
+    dirty: false,
+    values: initValues,
+    fns: initFns,
+  });
 };
