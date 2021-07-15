@@ -497,12 +497,14 @@ const testPrimitivesExceptionThrow = (creator: (arg: any) => any): void => {
 Przed rozpoczęciem refactoru testów i tworzeniem funkcji jak wyżej weż pod uwagę:
 
 a) Wady:
+
 - Dodatkową warstwe abstrakcji, w której możesz się pomylić i spowodować failowanie testów pomimo, iż implementacja jest prawdiłowa.
 - Mniej czytelne komunikaty błędów.
 - Większy próg wejścia dla mniej doświadczonych devów.
 - Ryzyko wywalenia większej liczby testów w razie pomyłki.
 
 b) Zalety:
+
 - Mniej kodu,
 - Testowanie w 100% tego jak coś działa, a nie szczegółów implementacji jest o wiele łatwiejsze. Przykładowo moglibyśmy sobie dodać
   `jest.fn` i zamockować nasz `set` w obiekcie `form`. Tak naprawdę przetestowali byśmy integrację wewnątrzną komponentu z metodą `set` i to czy
@@ -630,7 +632,8 @@ describe('useForm()', () => {
 ```
 
 ```tsx
-// React adapter POC
+// React adapter POC.
+// Pamiętaj, że to tylko propozycja, a nie prawdziwa implementacja.
 import { form, Form, Dictionary } from 'io-form';
 
 const useForm = <V extends Dictionary, R = boolean>(initValues: V, fns?: Fns<V, R>): [] => {
@@ -735,6 +738,68 @@ const UserForm: FC = () => {
 };
 
 export default LoginForm;
+```
+
+### (Commit 14) Add Angular adapter POC
+
+```ts
+// Angular io-form Adapter POC
+// Pamiętaj, że to tylko propozycja, a nie prawdziwa implementacja.
+import { Injectable } from '@angular/core';
+import { BehaviourSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { form, Dictionary, Fns, Form, SubmitEvent } from 'io-form';
+
+@Injectable()
+class Form<V extends Dicitionary> {
+  protected _form: Form<V>;
+  data$: Observable<Form<V>>;
+
+  config = (initValues: V, initFns: Fns<V, boolean>): void => {
+    this._form = new BehaviourSubject(form<V>(initValues, initFns));
+    data$ = this._form.asObservable().pipe(
+      map(({ set, next, check, submit, ...data}) => data)
+    );
+  };
+
+  change = (e: Event): void => {
+    this._data.next(this._data.getValue().next({
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  submit = (e: SubmitEvent): void => {
+    this._data.next(this._data.getValue().submit(e));
+  };
+}
+```
+
+```ts
+interface UserFormData {
+  username: string;
+  code: null | number;
+  phone: string;
+}
+
+@Component({
+  template: `
+    <form *ngIf="data$ | async as data">
+      <input [value]="data.value" (input)="form.change($event)" />
+    </form>
+  `
+})
+class UserForm {
+  this.data$ = this.form.data$;
+
+  constructor(public form: Form<UserFormData>) {
+    this.form.config({
+      username: '',
+      code: null,
+      phone: ''
+    });
+  }
+}
 ```
 
 ## Podsumowanie
