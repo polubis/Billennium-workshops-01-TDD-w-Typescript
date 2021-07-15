@@ -1,8 +1,3 @@
-/*
-  Dodaliśmy kilka początkowych modeli w celu zrozumienia API naszej biblioteki. Narazie są to modele bardzo proste, które z czasem będą
-  bardziej precyzyjne.
-*/
-
 export type Dictionary = Record<string, any>;
 
 export type Fn<V, R> = (value: V) => R;
@@ -26,9 +21,6 @@ export interface CheckResult<V extends Dictionary, R> {
   errors: Errors<V, R>;
 }
 
-/*
-  Model danych.
-*/
 export interface FormData<V extends Dictionary, R> extends CheckResult<V, R> {
   dirty: boolean;
   fns: Fns<V, R>;
@@ -39,9 +31,6 @@ export interface FormData<V extends Dictionary, R> extends CheckResult<V, R> {
 export interface InitFormData<V extends Dictionary, R>
   extends Pick<FormData<V, R>, 'dirty' | 'fns' | 'values' | 'touched'> {}
 
-/*
-  Kontrakt obsługi przejścia z jednego stanu w drugi oraz modyfikacji danych.
-*/
 export interface Formable<V extends Dictionary, R> {
   next(patchedValues: Partial<V>): Form<V, R>;
   set(patchedValues: Partial<V>): void;
@@ -49,7 +38,4 @@ export interface Formable<V extends Dictionary, R> {
   check(): CheckResult<V, R>;
 }
 
-/*
-  Całosciowy model biblioteki.
-*/
 export type Form<V extends Dictionary, R> = FormData<V, R> & Formable<V, R>;

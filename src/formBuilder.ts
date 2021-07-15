@@ -18,7 +18,6 @@ const validateValuesShape = (values: any): void => {
   }
 };
 
-// Factory function
 const createForm = <V extends Dictionary, R>(
   initFormData: InitFormData<V, R>,
   checkStrategy: CheckResultStrategy<V, R>,
@@ -57,7 +56,7 @@ const createForm = <V extends Dictionary, R>(
   };
 
   const handleSubmit = (e?: SubmitEvent) => {
-    e && e?.preventDefault();
+    e && e.preventDefault();
 
     return createForm(
       {

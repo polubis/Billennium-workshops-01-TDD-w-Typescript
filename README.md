@@ -1,98 +1,136 @@
 # Billennium-workshops-01-TDD-w-Typescript
 
-## Czym jest test ?
+### Jak uruchomić ?
 
-Sprawdzenie naszego kodu w sposób manualny bądź automatyczny (uruchomienie go i porównanie otrzymanego wyniku z oczekiwanym).
-My się skupimy na automatycznym testowaniu z wykorzystaniem
-`jest`.
+`git clone https://github.com/polubis/Billennium-workshops-01-TDD-w-Typescript.git`
+
+`cd Billennium-workshops-01-TDD-w-Typescript`
+
+`code .`
+
+`npm install`
+
+`npm run test-watch`
+
+### Motto przewodnie
+
+"Testów przydatności dowieść może tylko człek, który tablice bugów z regresji posiada."
+
+![Yoda](https://a.allegroimg.com/s512/11a091/2511dc3646cab50accf1c3839bb2/Maska-mistrza-YODY-gwiezdne-wojny-STAR-WARS-party)
 
 ### Co dają testy ?
 
-- Poczucie stabilności w projekcie jeżeli są dobrze napisane.
-- Odporność na regresję.
-- Łatwość robienia refactoru kodu.
+- Większą odporność na regresje.
+- Łatwiejszy refactor.
 - Ułatwiają utrzymanie aplikacji.
-- Wprowadzają swoistą dokumentację do kodu.
+- Wprowadzają dokumentację do kodu.
+
+### Nie idź ślepo w code coverage
+
+Fajnie jak masz 100% pokrycia kodu testami, ale dobrze jest jak masz i 10%. Ważne, aby na samym początku testować znaczące fragmenty twojego systemu / apki / biblioteki.
+
+![coverage](assets/coverage.png)
+
+### Konsekwencje pisania testów
+
+- Musimy je naprawiać.
+- Aktualizujemy zależności związane z testowaniem.
+- Zwiększamy próg wejścia w projekt.
+- Dodatkowo dbamy o kod testów.
+- Dodatkowy kod do review podczas `PR`.
 
 ### Piramida testów
 
 ![Piramida testów](https://projectquality.it/wp-content/uploads/2020/02/Piramida-Testo%CC%81w-Projectquality.it_-1024x640.png)
 
-Zazawyczaj piszemy najwięcej testów jednostkowych chociaż są projekty i podejścia w których stawia się na testy integracyjne.
-One znacznie częściej failują, ale pilnują większej częsci funkcjonalności.
-
-### Utrzymanie testów
-
-Czyli koszt jaki ponosimy pisząc testy, naprawiając je, aktualizując biblitoteki, ucząć się potrzebnych technologii
-oraz pilnując konwencji (tak w skrócie).
-
 ### TDD
 
-Podejście w którym najpierw piszemy test, testy. Sprawiamy, aby te testy nie przechodziły, a następnie dopisujemy kod i uruchamiając testy sprawdzamy czy testy przechodzą.
+Podejście do pisania testów, w którym kolejno:
+
+- Tworzymy kontrakt tego co chcemy testować.
 
 ```ts
-// TAK NIE ROBIMY W TDD
-const sum = (a: number, b: number): number => a + b;
-it('adds 2 numbers', () => {
-  expect(sum(2, 4)).toBe(6);
-});
-
-// TAK ROBIMY W TDD
-it('adds 2 numbers', () => {
-  expect(sum(2, 4)).toBe(6);
-});
-const sum = (a: number, b: number): never => {
+// TAK
+const sum = (a: number, b: number) => {};
+// LUB TAK WEDŁUG SZTUKI
+const sum = (a: number, b: number): number => {
   throw new Error('Not implemented');
 };
-// Uruchamiamy testy
-// Test run failed
-// Piszemy poprawną implementację
-const sum = (a: number, b: number): number => a + b;
-// Testy przechodzą
 ```
 
-### Kiedy używać ?
+- Najpierw piszemy opis testu.
 
-- Dla mało doświadczonych devów tylko na testach jednostkowych.
-- Dla całej reszty to już zależy od preferencji (ja piszę dla testów jednostkowych zawsze, dla integracyjnych tylko wtedy gdy testują logikę biznesową).
-- Kiedy projekt ma stabilny proces planowania i dokumentowania funkcjonalności (jeżeli koncept jest często zmieniany to nie ma sensu wykorzystywać TDD), a nawet i często pisać testy.
+```ts
+it('adds 2 numbers', () => {
+  ///...
+});
+```
+
+- Potem dodajemy jego implementację.
+
+```ts
+// Testy w tym momencie nie przechodzą
+it('adds 2 numbers', () => {
+  expect(sum(2, 4)).toBe(6);
+});
+```
+
+- Następnie dodajemy implementacje, która sprawia, że test przechodzi.
+
+```ts
+const sum = (a: number, b: number): number => {
+  return a + b;
+};
+```
+
+- Robimy refactor kodu.
+
+```ts
+const sum = (a: number, b: number): number => a + b;
+```
+
+### Kiedy warto używać ?
+
+- Projekty startujące.
+- Nowe funkcjonalności.
+- Kiedy kod jest testowalny.
+
+> "Testowalność kodu" to nie wartość tak/nie tylko metryka. Kod jest "testowalny" w jakimś stopniu, a nie "testowalny", albo nie "testowalny".
+
+- Stabliny proces definiowania zakresu funkcjonalności.
+
+> Tutaj mogą się przydać `scenariusze testowe` od testera manualnego bądź dobrze opisane `user stories`.
 
 ### Jakie problemy może rozwiązać TDD ?
 
-- W skrócie dobrze wykorzystywane TDD potrafi znacznie ograniczyć liczbę bugów związanych z warunkami brzegowymi.
-- Kod staje się bardziej przemyślany ponieważ przed pisaniem tworzymy w pewien sposób scenariusz tego jak kod ma działać.
-- Kod staje się bardziej odporny na regresję.
-- Pozwala się łatwo odnaleźć w przypadku gdy ktoś skaczę z projektu na projekt i ma tendencję do zapominania tego co robił wczoraj czy kilka dni temu. Pozwalają robić coś w rodzaju ToDo listy pod konkretny task.
+- Redukuje problemy z regresją.
+- Bardziej przemyślany kod - pokrywa więcej przypadków brzegowych.
+- `Check lista` tego co zostało zrobione, a co nie.
 
 ### Jakie problemy może spowodować ?
 
-Wiadomo, że w programowaniu jak i w życiu nie ma nic za darmo i zawsze balansujemy pomiędzy wagami plusów i ich ilością, a minusów.
+- Spowolnić development gdy podejście jest nie wystarczająco przećwiczone.
 
-- Spory próg wejścia i problem z przestawieniem myślenia dla mniej doświadczonych devów.
-- Dla osób rozpoczynających przygodę z tym podejściem często czas developmentu się znacznie wydłuża.
-- Wymaga sporej wprawy.
-- Wymaga umiejętności przestawiania się na to czy coś piszemy z wykorzystaniem TDD czy "tradycyjnie" najpierw implementacja, a później testy - poprostu czasami często jest wykorzystać TDD przy testowaniu integracyjnym.
+> TDD przu użyciu typescript z opcja `strict` na `true` może być ciężkie. `jest` pokaże testy jako failujące nawet jeżeli implemnetacja logiki będzie poprawna. Dlatego też często podczas używania TDD z `ts` rzutuje się na `any` w celu "uspokojenia" kompilatora `ts` i możliwości testowania czegoś w izolacji. Na sam koniec wyrównuje się typy do docelowych.
 
-## Po co tworzymy biblioteki ?
+## Kiedy tworzymy biblioteki ?
 
-Wyobraźmy sobię sytuację, że mam ogromny projekt. Panel administratora, moduł płatności, aplikacja właściwa (system do obsługi faktur), moduł autoryzacji i tak dalej...
+Biblioteki tworzymy gdy chcemy:
 
-Technologie wykorzystywane w projekcie to (NodeJS, Angular 2+, React, TypeScript).
+- Współdzielić kod między aplikacjami/bibliotekami.
+- Zwiększyć performance (fe) - takie bibiolteki można wrzucić w cache na wieki.
+- Sprawić, aby rozwiązanie było reużywalne.
+- Zwiększyć enkapsulację i uniemożliwić modyfikowanie kodu.
+- Uspójnić kod systemu.
+- Zainwestować nas czas na przyszłość. Takie biblioteki mogą być używane w nowych projektach.
 
-Występuje prosty podział backend/frontend i w tych katalogach
-również podział na moduły (authorization, core, payment, ...etc).
+### Dlaczego biblioteka od formularzy ?
 
-Pewną logikę będziemy mieć bardzo podobną. Obsługę walidacji w formularzach oraz zapis danych z nich do bazy na serwerze, gdzie też musi być taka sama, a często bardziej zaawansowana walidacja.
+Ponieważ zarządzanie warstwą walidacji po stronie be/fe oraz pomiędzy różnymi frameworkami fe różni się na tyle, że nie można współdzielić kodu. Jesteśmy niezależni pod tym względem od technologii.
 
-Do tego dochodzi jeszcze jeden problem. Angular oraz React mają zupełnie inne API do obsługi formularzy oraz modele.
+Przyjmeny model obsługi pól formularzy prezentuje `Angular` i `FormControl`. Będzie to naszą inspiracją jednak zmienimy kilka rzeczy.
 
-O ile z API nic nie zrobimy z powodu, że są to zupełnie inne technologie, z inną składnią, o tyle sam model możemy uspójnić.
-
-Docelowo będziemy mieć - taki sam model o logikę walidacji na backendzie oraz na każdym możliwym frameworku na FE albo nawet w czystym JavaScript.
-
-Poniżej przykład różniącego się API do obsługi formularzy oraz modeli:
-
-### React
+#### Przykład formularza w React (Yup, Formik)
 
 ```ts
 // VALIDATION SCHEMA
@@ -113,10 +151,7 @@ export const ValidationSchemaExample = () => (
         email: '',
       }}
       validationSchema={SignupSchema}
-      onSubmit={(values) => {
-        // same shape as initial values
-        console.log(values);
-      }}
+      onSubmit={(values) => {}}
     >
       {({ errors, touched }) => (
         <Form>
@@ -134,18 +169,9 @@ export const ValidationSchemaExample = () => (
 );
 ```
 
-### Angular
+#### Przykład formularza w Angular (ReactiveForms)
 
 ```ts
-import { Component } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
-import { Validators } from '@angular/forms';
-
-@Component({
-  selector: 'app-profile-editor',
-  templateUrl: './profile-editor.component.html',
-  styleUrls: ['./profile-editor.component.css'],
-})
 export class ProfileEditorComponent {
   profileForm = new FormGroup({
     firstName: new FormControl('', Validators.required),
@@ -169,23 +195,17 @@ export class ProfileEditorComponent {
   <input id="last-name" type="text" formControlName="lastName" />
 </form>
 
-<p>Complete the form to enable button.</p>
 <button type="submit" [disabled]="!profileForm.valid || profileForm.pristine">Submit</button>
 ```
 
-### NodeJS
+### Przykład walidacji w NodeJS - jawne sprawdzanie url
 
 ```ts
-import express, { Request, Response, NextFunction } from 'express';
-
-import { parseSuccess, BadRequest } from '../utils/response-management';
-import { ScraperService } from '../services';
-
-const ScraperController = express.Router();
-
 ScraperController.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.query.url) {
+    const userFormData: UserFormData = req.body as UserFormData;
+
+    if (!userFormData.username || userFormData.!phone) {
       next(new BadRequest('Url parameter is required'));
     }
 
@@ -196,33 +216,25 @@ ScraperController.get('/', async (req: Request, res: Response, next: NextFunctio
     next(new BadRequest(err));
   }
 });
-
-export default ScraperController;
 ```
 
-Jak widać we wszystkich 3 przykładach istnieje inny sposób obsługi wyżej wspomnianej logiki.
+### Zanim zaczniemy implementacje
 
-Potrzebujemy prostego rozwiązania, które uspójni cały ten proces, pozwoli na współdzielenie kodu pomiędzy Angularem, Reactem i Nodem.
-
-### Zanim zaczniemy
-
-Pierwsze co w takich przypadkach warto zrobić to stworzyć prostą definicję modelu jaki będzie zwracany podzas walidacji oraz wypisać założenia.
+Musimy spisać założenia oraz stworzyć prototyp API.
 
 #### Założenia
 
-- **typesafety** - przekazany inicjalnie typ zawsze jest spełniony i pilnowany później podczas walidacji. Oznacza to, że przekazując interfejs `User` nie mogę nagle zmienić pól i edytować go w niedozwolony sposób.
-- **spójny model** - biblioteka po każdej zmianie zwraca dokładnie ten sam model z taki samymi typami danych.
-- **brak zależności** - biblioteka jest całkowicie standalone.
-- **mały boilerplate** - staramy się wykorzystywać jak najmniejsze nazwy, ale wystarczająco opisowe.
-- **100% immutable** - po to, aby OnPush angularowy działał defaultowo z naszą libką oraz React. Dodatkowo kod jest też łatwiejszy w utrzymaniu.
-- **alogorytm walidacji możliwy do definiowania** - docelowo biblioteka wykorzystuje własny algorytm do walidacji, ale powinna dać możliwość dostosowania.
-- **możliwa zmiana formatu błędów** - zamiast wartości **true/false** ktoś będzie chciał wprowadzić listę, która przy każdym walidatorze posiada odpowiednią informacje o rezultacie - biblioteka ma na to pozwolić.
+- **100% typesafe** - raz przekazane wartości mają później zawsze ten sam typ.
+- **cohesion** - biblioteka po każdej zmianie wartości zwraca dokładnie to samo API.
+- **standalone** - biblioteka jest całkowicie standalone.
+- **low boilerplate** - jak najmniej kodu, ale nie kosztem rozumienia API.
+- **100% immutable** - kompatybilność z frameworkami fe oraz łatwość debugowania.
+- **customizable** - algorytmy walidujące możliwe do dostosowania.
 
 #### Model oraz prototyp API
 
 ```ts
 // Pseudo kod pokazujący sposób działania.
-
 import { form } from 'form';
 import { req, min, max, minLength, maxLength } from 'validators';
 
@@ -234,13 +246,12 @@ const loginForm = form(
   { username: [req, min(2), max(10), minLength(20), maxLength(30)] },
 );
 
-loginForm.set({ username: 'd' }); // patch updates - sets property in form object and runs validation
+loginForm.set({ username: 'd' }); // częściowy update. Modyfikacja tylko propki username
 loginForm.set({ username: 1 }); // TS ERROR invalid type
 
-loginForm.next(); // doing same as set but clones object
+loginForm.next(); // to samo co set, ale robi kopie
 
-// f.e in React
-
+// React
 this.setState((prevState) => ({
   loginForm: prevState.loginForm.next({
     username: e.target.value,
@@ -248,356 +259,79 @@ this.setState((prevState) => ({
 }));
 ```
 
-## Implementacja biblioteki z uwzględnieniem kolejności developmentu
+## Implementacja biblioteki
 
-Rozpoczęcie implementacji od wszystkich commitów poza 1 - inicjalnym. Dodatkowo przy commitach mogą pokazywać się modyfikacje pliku `README.ts` - poprostu te modyfikacje należy ignorować.
+Można prześledzić sobie historię zmian i porównywać z opisami tutaj.
 
 ### (1 Commit) Initial commit
 
-Stworzenie repo + dodanie kontentu prezentacji do pliku README. Nie istotny z punktu widzenia nauki. Można iść dalej.
+Stworzenie solucji. Nie istotny z punktu widzenia nauki TDD.
 
 ### (2 Commit) Add project structure and test configuration
 
-Dodanie potrzebnych zależności jak np. `jest`, `typescript` + setup developerski jak linter, formatter itp.
+Setup projektu i instalacja zależności. Linter, code formatter, typescript oraz framework do testowania `jest`.
 
 ### (3 commit) Write test scenarios and add basic models
 
-Stworzenie kilku testów, które oczywiście nie przechodzą. Testy piszemy zazwyczaj w grupach albo jeden po drugim w zależności
-od znajomości wymagań i podejścia.
-
-Ten zestaw testów sprawdza inicjalny setup oraz początkowa walidacje, która jest niezbędna do dalszego działania obsługi formularzy.
-
-Dodatkowo zostały dodane podstawowe modele, które spełniają nasze API. Nasze modele będa się zmieniać podczas implementacji
-na bardziej precyzyjne - np. generyczne bądź wykorzystujące mapped types. Póki taka definicja typów wystarczy, aby pisać testy
-i nie dostawać komunikatów o błędach ts'a przy uruchamianiu.
-
-> Komunikaty o błedach dotyczących typowania zależą od konfiguracji `jest` oraz `typescripta`.
-
-Rezultatem będą failujące testy po uruchomieniu polecania `npm run test-watch`.
+1. Stworzeno boilerplate testowy - według konwencji z samego początku.
+2. Dodano testy, które failują.
+3. Dodano podstawowe modele, aby zachować spójność API i spokój `ts`. 👽
 
 ![](assets/3.gif)
 
 ### (4 commit) Write values shape validator
 
-Zakomentowałem resztę testów w celu pokazania kolejności developmentu.
-
-W tym commicie otypowaliśmy bardziej "dokładnie" to czym mają być poszczególne właściwości naszego obiektu.
-
-```ts
-/*
-    Dzieki temu zabiegowi gwarantujemy, że typ generyczny przekazany do interfejsu Formable musi byc obiektem
-    Niestety np. null wpisany ręcznie przejdzie lub asercja więc musimy zabezpieczyć się przed tym w runtime.
-*/
-// defs.ts
-export interface Formable<V extends Dictionary> {
-  next(): Form<V>;
-  set(): void;
-  submit(): void;
-  check(): any;
-}
-
-/*
-  Obydwie funkcje zajmą się kolejno stworzeniem błędu oraz jego rzuceniem w przypadku nie właściwych wartości początkowych
-  Jest to o tyle istotne, że automatycznie daje sygnał komuś, że wykorzystuje API biblioteki w niewłaściwy sposób.
-  Niestety można również przekazać do naszego komponentu również wartości po assercji dlatego wypada dopisać
-  testy.
-*/
-// index.ts
-const buildError = (reason: string, message: string): Error => {
-  return new Error(`[${reason}]: ${message}`);
-};
-
-const validateValuesShape = (values: any): void => {
-  if (!values || typeof values !== 'object') {
-    throw buildError('VALUES_SHAPE, 'Values parameter must be an object');
-  }
-};
-
-/*
-  Wykonując rzutowanie przepychamy dowolną wartość i sprawdzamy jak zachowa się nasz kod.
-*/
-// index.test.ts
-it('throws on invalid initial values', () => {
-  const _PROBES_ = [null, undefined, 1, '', [], true, Symbol('')];
-
-  _PROBES_.forEach((probe) => {
-    expect(() => form(probe as any)).toThrow();
-  });
-});
-```
+1. Doprecyzowanie typów.
+2. Zakomentowanie reszty testów w celu ułatwienia developmentu.
+3. Testy + implementacja walidacji początkowych wartości.
 
 ### (5 commit) Finish whole initialization of form
 
-W celu przyśpieszenia napiszemy implementację do całego procesu inicjalizacji formularza za jednym razem.
-
-W tym commicie z ważniejszych rzeczy to:
-
-- Unikajcie definiowania tablicy wartości i iterowania po nich. Definicje błędów w zwracane przez `jest` są wtedy bardzo nieczytelne.
-  Znacznie lepiej jest zduplikować trochę kodu, ale posiadać za to czytelny error message w konsoli.
-
-```ts
-// DONT DO
-const _PROBES_ = [null, undefined, 1, '', [], true, Symbol('')];
-// DO
-expect(() => form(probe as any)).toThrow();
-```
-
-- Dodaliśmy precyzyjniejszą definijcę typów dla naszych walidatorów. Teraz nie ma możliwości przekazania kluczy innych
-  niż te, które są zdefiniowane w obiekcie wartości początkowych, dodatkowo funkcje muszą zwracać rezultat `boolean`.
-
-```ts
-export const form = <V extends Dictionary>(initValues: V, fns: Fns<V> = {}): Form<V> => {
-  // ...
-};
-```
-
-- Warto też zaznaczyć, że `hard codujemy` algorytm wyznaczania błędów co jest na chwile obecną nie zgodne z założeniami .Jednak w celu pokazania łatwiejszego refactoru, pozwoliłem sobie na to małe uproszczenie. Później zostanie to zmienione.
-- Dodatkowo ważno zaznaczyć, przekształciliśmy testy, które wcześniej napisaliśmy jako jedno wywołanie na kilka nowych testów, które odrazu opisują problem w momencie failowania.
-
-```ts
-/*
-  Zamiast dodawać asercję w teście wyżej, tworzymy nowy, który
-  odrazu informuje nas o tym co je nie tak w momencie failu.
-*/
-it('assigns empty object literal for empty fns parameter', () => {
-  expect(form({ username: '' }, {}).fns).toEqual({});
-});
-
-/*
-  Ten sam mechanizm stosujemy w przypadku innych podobnych testów. Teraz mamy jednoznaczny podział i informacje jakie
-  wartości powinny być przepuszczane przez walidator, a jakie nie.
-*/
-describe('throws error for', () => {
-  it('primitives', () => {
-    expect(() => form(1 as any)).toThrow();
-    expect(() => form('' as any)).toThrow();
-    expect(() => form(null as any)).toThrow();
-    expect(() => form(undefined as any)).toThrow();
-    expect(() => form(Symbol('') as any)).toThrow();
-  });
-
-  it('all other ref types except object', () => {
-    expect(() => form([] as any)).toThrow();
-    expect(() => form(() => '' as any)).toThrow();
-  });
-});
-```
-
-- Możemy pozbyć się w testach jawnego określenia wartości jako `any` z powodu `mapped types` i dokładniejszego otypowania obiektu `fns`.
-- W funkcji `form` rzutujemy sobie na `any` dla większej wygody testowania. W trybie `strict` kompilator TypeScript bedzie rzucał errory przy jakiejkolwiek niespójności. Później zamienimy to `any` na deklaracje w oparciu o prawdziwy interfejs.
+1. Implementacja testów do sprawdzenia poprawnej inicjalizacji.
+2. Implementacja logiki, aby testy przechodziły.
+3. Dalsze doprecyzowanie typów.
 
 ### (6 commit) Refactor current tests to be more intuitive and more scalable
 
-Aktualnie mamy spory problem z tworzeniem mocków do naszych testów. Aby ułatwić sposób tworzenia mocków wykorzystamy wzorzec `builder`.
-Nasz builder zajmie się tworzeniem dedykowanych obiektów typu `User` ustawiając domyślne wartości podczas 1 wywołania, a następnie
-udostępni nam możliwość zmiany poszczególnych pól według upodobania.
-
-```ts
-interface User {
-  username: string;
-  phone: string;
-  code: number;
-}
-
-const createUser = (): User => ({
-  username: 'piotr1994',
-  phone: '999 229 323',
-  code: 2232,
-});
-
-const userBuilder = (user = createUser()) => ({
-  valueOf: () => user,
-  setUsername: (username: User['username']) => userBuilder({ ...user, username }),
-  setPhone: (phone: User['phone']) => userBuilder({ ...user, phone }),
-  setCode: (code: User['code']) => userBuilder({ ...user, code }),
-});
-
-export const _USERS_ = [
-  userBuilder(),
-  userBuilder().setUsername('piotr'),
-  userBuilder().setUsername(''),
-].map((builder) => builder.valueOf());
-```
+1. Refactor mocków - wprowadzenie wzorca `builder` do tworzenia mocków użytkownika.
 
 ### (7 commit) Add tests suites for set() and next()
 
-W tym commicie dodaliśmy testy, które są puste i testują 2 metody `set()` oraz `next()`. Dodatkowo uzupełniliśmy definicje typów
-oraz dodaliśmy implementacje metod w taki sposób, że rzuca ona wyjątek. W następnym commicie dodamy definicje testów oraz zaczniemy pisać implementacje, która sprawia, że testy przechodzą. Zwróć uwagę, że testy oraz ich tytuły się powtarzają. Zajmiemy się tym później. Teraz interesuje nas 1 wersja działającego kodu, a na samym końcu zajmiemy się refactorem testów oraz implementacji.
+1. Dodanie opisów do testów.
+2. Doprecyzowanie typów dla metod `set()` oraz `next()`.
 
 ### (8 commit) Implement tests and implementation for set(), next() methods
 
-Na samym początku dopiszemy kod do testów, który ma przetestować działanie powyższych metod. Z racji tego, że są one nie zaimplementowane
-testy będą failować. Dodatkowo przed tym zrobimy mały refactor naszych mocków użytkownika. Używanie `USERS[2]` jest dosyć ryzykowne.
-Wystarczy zmiana kolejności w tablicy `users` i mamy połowe testów wywalonych. Dlatego stworzymy sobie konkretne zmienne i to je będziemy
-wykorzystywać w kodzie zamiast `magic numbers`.
-
-Z ważniejszych rzeczy w tym commicie:
-
-- Stworzenie nowego modelu `InitFormData`, który pozwoli nam uniknąć przekazywania całego obiektu podczas tworzenia formularza. Robimy to po to, aby spełnić zasadę `Interface segregation` z `SOLID`.
-- Wydzielenie funkcji tworzącej formularz `createForm` - `factory function`, która ma za zadanie dokonywać walidacji i przyjąć inicjalne wartości. Dodatkowo pozwala na nadpisanie takich pól jak `invalid`, `fns` czy `values`.
-
-```ts
-// Możemy powtarzalną logikę w tym miejscu i stworzyć kilka wariantów naszego formularza później.
-const createForm = <V extends Dictionary>(initFormData: InitFormData<V>): Form<V>
-```
-
-- Łatwo można też zauważyć, że możemy robić dowolny refactor. Ciągle uruchamiające się testy informują nas o tym czy czegoś nie popsuliśmy.
-- Użyliśmy `value accessor get()` - do pobierania informacji o zmienionych wartościach wewnątrz funkcji. Ponieważ po zwróceniu obiektu
-  tworzy się `closure` zawsze będziemy mieć starą wartość, nawet po jej modyfikacji poprzez funkcję. Żeby tego uniknąć tworzymy getter, który jest funkcją. Chroni nas to również przed czymś takim jak: `form.values = { jakasWartosc: '' }`. W tym przypadku nadpiszemy getter, a nie obiekt wewnątrz funkcji.
-- Również warto zwrócić uwagę na duplikowaną zawartość testów. Można to usprawnić jednak to czy warto i jakie konsekwencje to może mieć sprawdzimy w następnym commicie.
+1. Napisanie logiki testów.
+2. Dopisanie implementacji, która sprawia, że testy przechodzą.
+3. Doprecyzowanie typów.
 
 ### (9 commit) Compare tests helper functions with typical approach
 
-Możemy pozbyć się duplikacji kodu w testach w następujący sposób:
-
-```ts
-const testErrorThrow = (...args: any[]): void => {
-  // make assertions based on arguments
-};
-```
-
-Jednak zanim zaczniemy przyjrzymy się informacji jaka pojawia się w momencie gdy usuniemy wywołanie funkcji `validateValuesShape`.
-
-```js
-● form() › in setup phase › throws error for
-› all other ref types except object
-
-  expect(received).toThrow()
-
-  Received function did not throw
-
-    14 |
-    15 |       it('all other ref types except object', () => {
-  > 16 |         expect(() => form([] as any)).toThrow();
-```
-
-Komunikat jest całkiem czytelny. Pokazuje nam linie asercji, w której jest problem oraz tytuł testu. Żeby porównać czy warto tworzyć
-funkcje pomocnicze testujące konkretną logikę przyjrzyjmy się poniższemu przykładowi.
-
-```ts
-// Funkcja testująca rzucanie wyjątków dla typów wartościowych
-const testPrimitivesExceptionThrow = (creator: (arg: any) => any): void => {
-  expect(() => creator(1 as any)).toThrow();
-  expect(() => creator('' as any)).toThrow();
-  expect(() => creator(null as any)).toThrow();
-  expect(() => creator(undefined as any)).toThrow();
-  expect(() => creator(Symbol('') as any)).toThrow();
-};
-```
-
-```js
-    5 |   const testPrimitivesExceptionThrow
-= (creator: (arg: any) => any): void => {
-  > 6 |     expect(() => creator(1 as any)).toThrow();
-      |                                     ^      7 |     expect(() => creator('' as any)).toThrow();
-    8 |     expect(() => creator(null as any)).toThrow();
-    9 |     expect(() => creator(undefined as any)).toThrow();
-```
-
-Przed rozpoczęciem refactoru testów i tworzeniem funkcji jak wyżej weż pod uwagę:
-
-a) Wady:
-
-- Dodatkową warstwe abstrakcji, w której możesz się pomylić i spowodować failowanie testów pomimo, iż implementacja jest prawdiłowa.
-- Mniej czytelne komunikaty błędów.
-- Większy próg wejścia dla mniej doświadczonych devów.
-- Ryzyko wywalenia większej liczby testów w razie pomyłki.
-
-b) Zalety:
-
-- Mniej kodu,
-- Testowanie w 100% tego jak coś działa, a nie szczegółów implementacji jest o wiele łatwiejsze. Przykładowo moglibyśmy sobie dodać
-  `jest.fn` i zamockować nasz `set` w obiekcie `form`. Tak naprawdę przetestowali byśmy integrację wewnątrzną komponentu z metodą `set` i to czy
-  jest wywoływana. Jednak w momencie gdy ktoś usunie wywołanie metody `set` i zastąpi to inna - test się wywali.
-- Takie funkcje mogą znacznie skrócić czas pisania testów w przypadku gdy są generyczne.
-
-Jak zawsze decyzja zależy od twoich preferencji oraz projektu. Ja staram się pisać zawsze funckje tego typu chyba, że logika testów jest
-mocno customowa i zmienia się per test. W tym przypadku jednak taka sytuacja nie występuje więc wszystkie assercje sprawdzające rzucanie wyjątków zastąpiłem funkcjami pomocniczymi.
-
-> `jest.fn`, `jest.mock` oraz wszystkie tego typu metody są bardzo pomocne w przypadku testowania integracyjnego. Przykładowo mam jakiś moduł do autoryzacji. Inny moduł, który z niego korzysta nie interesuje to czy moduł autoryzacji działa poprawnie. Ważne jest to, żeby obsłużyć potencjalne API tego modułu i przetestować to czy jest one poprawnie wykorzystywane.
-> Tego typu przykłady zobaczymy później podczas pisania `adapterów` do `React` oraz `Angular`.
+1. Redukcja kodu testów za pomocą pomocniczych funkcji testujących.
 
 ### (10 commit) Write failing tests for submit(), check() methods and add implementation
 
-W tym commicie robimy dokładnie to samo co wcześniej. Rozpisujemy testy, nazywamy je oraz dopisujemy kod testujący. Następnie zajmiemy się implementacją metod.
-
-Z ciekawszych rzeczy to:
-
-- Robimy refactor rozwiązania, które mamy dotychczas. Tworzymy pomocnicze funkcje.
-- Usuwamy rzutowanie na `any` w implementacji. Teraz spełniamy już cały interfejs.
-- Tworzymy pomocniczy interfejs `CheckResult`, który będzie przechowywał stan walidacji.
+1. Dopisanie failujących testów do metod `submit()` oraz `check()`.
+2. Doprecyzowanie typów.
+3. Dodanie implementacji.
+4. Refactor kodu.
 
 ### (11 commit) Add option to apply other check result algorythms
 
-W tym przypadku użyjemy prostego wzorca `IOC - inversion of control`. Przekażemy funkcje spełniająca konkretny interfejs, która
-będzie miała za zadanie określić wartości `invalid` oraz `errors`. Kod wewnątrz obiektu `form` zajmie się uruchamianiem przekazanej
-funkcji, a my określimy tylko mechanizm wyliczania powyższych wartości.
-
-```ts
-// Definiujemy strategie walidacji
-const booleanStrategy = <V extends Dictionary>(values: V, fns: Fns<V>): CheckResult<V> => {
-  const keys = Object.keys(values);
-
-  const errors = keys.reduce((acc, key): Errors<typeof values> => {
-    const value = values[key];
-    const valueFns = fns[key];
-
-    return {
-      ...acc,
-      [key]: Array.isArray(valueFns) ? valueFns.some((fn) => fn(value)) : false,
-    };
-  }, {} as Errors<V>);
-  const invalid = keys.some((key) => errors[key]);
-
-  return {
-    errors,
-    invalid,
-  };
-};
-
-// Przekazujemy ją do funkcji createForm()
-createForm(
-  {
-    touched: false,
-    dirty: false,
-    values: initValues,
-    fns: initFns,
-  },
-  booleanStrategy,
-);
-```
-
-Dzięki testom jesteśmy w łatwy sposób zweryfikować czy nasz moduł działą tak jak wcześniej. Po tej modyfikacji wszystkie testy przechodzą.
-Pozostaje nam zrobienie jeszcze kilku rzeczy.
-
-- Musimy dodać możliwość zdefiniowania innego typu błędu dla obiektu `errors`. Teraz jest to zawsze `boolean`.
-- Musimy oddelegować mechanizm tworzenia różnych typów formularzu do jakiejś `fabryki` bądź `buildera`.
-- Zrobić integrację z Angularem i Reactem wykorzystując TDD.
+1. Używamy wzorca `IOC - inversion of control` i przekazujemy funkcję, która będzie tworzyć rezultat walidacji.
+2. Dostosowujemy kod mając ciągle uruchomione testy. Z prespektywy funkcjonalności nic się nie zmienia. Poprostu `hard coded` algorytm zostanie teraz przekazany poprzez paremetry.
+3. Tworzymy oraz dostosowujemy modele.
 
 ### (12 commit) Add option to apply generic value for errors object
 
-Poprzednio mogliśmy tylko zwracać rezultaty o typie `boolean`. Teraz po drobnych poprawkach i zmianie definicji typów (dodaniu nowego
-parametru generycznego R), możemy przypisywać dowolne wartości do pól obiektu `errors`.
+1. Zmieniamy definicję typów w taki sposób, aby typ rezultatu w obiekcie `errors` mógłbyć określony podczas budowania mechnizmu obsługi formularza.
+2. Implementacja wzorca `builder` do budowy modułu od obsługi formularza.
 
-```ts
-export const form = formBuilder<boolean>(booleanStrategy);
-```
-
-Z ważniejszych rzeczy:
-
-- Zmieniliśmy nazwy plików. Teraz cała logika tworzenia obsługi formularzy jest zamknięta w pliku `formBuilder.ts`.
-- Konkretne implementacje będa dodawane w osobnych plikach razem z algorytmem obsługującym potrzebną logikę.
-- Dopisaliśmy test integracyjny, który testuje nasz moduł w całościowym kontekście.
-
-Została nam tylko integracja z `React` oraz `Angular` plus drobne poprawki na koniec.
-
-### (13 commit) Add React adapter POC
-
-Jak mogłyby wyglądać potencjalne testy + implementacja adaptera pod `React`?. Mając API gwarantujące `immutability` oraz
-wykorzystujące `chaining` jesteśmy wstanie napisać adapter bardzo szybko jak i również testy.
+### (13 commit) Add React facade POC
 
 ```tsx
-// React adapter tests POC
+// React facade tests POC
 import { renderHook } from '@testing-library/react-hooks';
 import { useForm } from './useForm';
 
@@ -632,7 +366,7 @@ describe('useForm()', () => {
 ```
 
 ```tsx
-// React adapter POC.
+// React facade POC.
 // Pamiętaj, że to tylko propozycja, a nie prawdziwa implementacja.
 import { form, Form, Dictionary } from 'io-form';
 
@@ -660,7 +394,7 @@ const useForm = <V extends Dictionary, R = boolean>(initValues: V, fns?: Fns<V, 
   return [formData, handleChange, handleSubmit];
 };
 
-// React adapter usage in dedicated form
+// React facade usage in dedicated form
 import React, { useState, FC } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -740,10 +474,10 @@ const UserForm: FC = () => {
 export default LoginForm;
 ```
 
-### (Commit 14) Add Angular adapter POC
+### (Commit 14) Add Angular facade POC
 
 ```ts
-// Angular io-form Adapter POC
+// Angular io-form facade POC
 // Pamiętaj, że to tylko propozycja, a nie prawdziwa implementacja.
 import { Injectable } from '@angular/core';
 import { BehaviourSubject } from 'rxjs';
@@ -758,15 +492,15 @@ class Form<V extends Dicitionary> {
 
   config = (initValues: V, initFns: Fns<V, boolean>): void => {
     this._form = new BehaviourSubject(form<V>(initValues, initFns));
-    data$ = this._form.asObservable().pipe(
-      map(({ set, next, check, submit, ...data}) => data)
-    );
+    data$ = this._form.asObservable().pipe(map(({ set, next, check, submit, ...data }) => data));
   };
 
   change = (e: Event): void => {
-    this._data.next(this._data.getValue().next({
-      [e.target.name]: e.target.value
-    }));
+    this._data.next(
+      this._data.getValue().next({
+        [e.target.name]: e.target.value,
+      }),
+    );
   };
 
   submit = (e: SubmitEvent): void => {
@@ -802,16 +536,70 @@ class UserForm {
 }
 ```
 
+## Na koniec tipy
+
+- Na początku przećwicz TDD na prostych funkcjach typu `sum()` aż podejście wejdzie Ci w krew.
+
+- Unikaj tworzenia mocków "ręcznie". Oddeleguj ten proces do innego bytu. To jaki wzorzec implementuje nie ma znacznia. Chodzi tylko o spójność danych i redukcje niedozwolonych operacji na mockach.
+
+```ts
+// Don't do
+const _USER_ = { id: 0 };
+// Do
+const _USER_ = userBuilder().valueOf();
+```
+
+- Nie używaj `magic numbers`, ani przy testach nie odnoś się do elementów tablicy. Zmiana kolejności może wyłożyć wiele testów.
+
+```ts
+// DON'T DO
+const _USERS_ = [userBuilder.valueOf(), userBuilder.valueOf()];
+// DO
+const _VALID_USER_ = userBuilder.valueOf();
+const _INVALID_USER_ = userBuilder.setUsername('').valueOf();
+```
+
+- Twórz funckje pomocnicze testujące potwarzalną logikę w module.
+
+```ts
+// DO - pamiętaj jednak, że to niesie za sobą ryzyko wywalenia testów jeżeli taka funkcja będzie źle zaimplementowana.
+const testRefTypesExceptionThrow = (creator: (arg: any) => any): void => {
+  expect(() => form([] as any)).toThrow();
+  expect(() => form(() => '' as any)).toThrow();
+};
+```
+
+## Przykład na żywo
+
 ## Podsumowanie
 
-To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.
+W artykule przeszliśmy przez proces budowy biblioteki do obsługi formularzy, warstwy ustawiania, walidacji dowolnego modelu.
 
-- Dev team składa się z midów / seniorów, którzy piszą dobre testy. Wiedzą jak pisać testy jednostkowe, integracyjne, jak mockować, tworzyć stuby, proxy oraz dbają o czytelność i utrzymywanie testów.
-- Biznes wie czego chce i przełożenie tych wymagań jest w dużej wiekszości wystarczająco czytelne dla developera, aby przygotować listę testów do napisania.
-- Sam koncept jest wystarczająco mocno przećwiczony przez developerów - jakies 2,3 miesiące ciągłego pisania daje gwarancję dużej wprawy i prędkość tworzenia rozwiązań jest praktycznia taka sama jak bez testów (mój przykład, ale wiadomo każdy ma inną głowę).
-- TDD wykorzystuje się raczej w przypadku tworzenia nowych rzeczy bądź dopisywania kodu do istniejących rozwiązań, który albo coś fixuje, albo w jakiś sposób powiększa funkcjonalność.
+Jest to prosty przykład ilustrujący proces "myślenia" podczas tworzenia kodu z wykorzystaniem TDD, a nie rozwiązanie produkcyjne gotowe do użycia.
 
-Podejście, które omówiono w tym przykładzie może zostać użyte do pisania tak naprawdę czegokolwiek w dużych systemach.
-Logiki autoryzacji, mapowania, warstwy zarządzania logiką biznesowa, ...etc.
+## PS
+
+Testowanie to tylko jedno z wielu narzędzi dbania o jakość naszych rozwiązań. Stosując je z pewnością zauważysz różnice. Jest to inwestycja, która zwraca się zawsze po czasie, tak samo jak `TypeScript`.
+
+![Devs vs refactor](https://i.imgflip.com/5gkcu2.jpg)
+
+![Devs vs refactor2](assets/cats.gif)
+
+### Generic / typical teksty od ludzi, którzy nie lubią w testy
+
+![XD](https://media.istockphoto.com/photos/clown-makes-funny-face-picture-id119148040?k=6&m=119148040&s=612x612&w=0&h=gawseEwR5cjw9rHZUz8muEvBkcEZA8MPZXDUx6Y_XuY=)
+
+1. Nie mam czasu w projekcie na testy.
+2. Pisanie w TDD wydłuża development.
+3. Ogłoszenie z nofluffjobs ->
+
+```ts
+const developer = {
+  tests: 'are you kidding ?',
+};
+```
+
+4. W moim projekcie nie da się wdrożyć testów.
+5. expect(true).toBe(true) XD 100% pokrycia XD.
 
 ## Następna prezentacja - Monorepo z Lerna - 4 apki (Angular, Vue, React, Gatsby)
