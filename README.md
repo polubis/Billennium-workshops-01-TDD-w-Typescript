@@ -512,7 +512,17 @@ Jak zawsze decyzja zależy od twoich preferencji oraz projektu. Ja staram się p
 mocno customowa i zmienia się per test. W tym przypadku jednak taka sytuacja nie występuje więc wszystkie assercje sprawdzające rzucanie wyjątków zastąpiłem funkcjami pomocniczymi.
 
 > `jest.fn`, `jest.mock` oraz wszystkie tego typu metody są bardzo pomocne w przypadku testowania integracyjnego. Przykładowo mam jakiś moduł do autoryzacji. Inny moduł, który z niego korzysta nie interesuje to czy moduł autoryzacji działa poprawnie. Ważne jest to, żeby obsłużyć potencjalne API tego modułu i przetestować to czy jest one poprawnie wykorzystywane.
-Tego typu przykłady zobaczymy później podczas pisania `adapterów` do `React` oraz `Angular`.
+> Tego typu przykłady zobaczymy później podczas pisania `adapterów` do `React` oraz `Angular`.
+
+### (10 commit) Write failing tests for submit(), check() methods and add implementation
+
+W tym commicie robimy dokładnie to samo co wcześniej. Rozpisujemy testy, nazywamy je oraz dopisujemy kod testujący. Następnie zajmiemy się implementacją metod.
+
+Z ciekawszych rzeczy to:
+
+- Robimy refactor rozwiązania, które mamy dotychczas. Tworzymy pomocnicze funkcje.
+- Usuwamy rzutowanie na `any` w implementacji. Teraz spełniamy już cały interfejs.
+- Tworzymy pomocniczy interfejs `CheckResult`, który będzie przechowywał stan walidacji.
 
 ## Podsumowanie
 

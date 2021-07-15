@@ -1,4 +1,4 @@
-import { Form, Dictionary, Fns, Errors, FormData, InitFormData } from './defs';
+import { Form, Dictionary, Fns, Errors, InitFormData, SubmitEvent, CheckResult } from './defs';
 
 const buildError = (reason: string, message: string): Error => {
   return new Error(`[${reason}]: ${message}`);
@@ -24,9 +24,18 @@ const generateErrors = <V extends Dictionary>(values: V, fns: Fns<V>): Errors<V>
   }, {} as Errors<V>);
 };
 
-const isFormInvalid = <V extends Dictionary>(errors: Errors<V>): boolean =>
+const isInvalid = <V extends Dictionary>(errors: Errors<V>): boolean =>
   Object.keys(errors).some((key) => errors[key]);
 
+const generateCheckResult = <V extends Dictionary>(values: V, fns: Fns<V>): CheckResult<V> => {
+  const errors = generateErrors(values, fns);
+  const invalid = isInvalid(errors);
+
+  return {
+    errors,
+    invalid,
+  };
+};
 
 // Factory function
 const createForm = <V extends Dictionary>(initFormData: InitFormData<V>) => {
@@ -34,17 +43,18 @@ const createForm = <V extends Dictionary>(initFormData: InitFormData<V>) => {
 
   let fns = initFormData.fns;
   let values = { ...initFormData.values };
-  let errors = generateErrors(values, fns);
-  let invalid = isFormInvalid(errors);
-  let dirty = false;
+  let { errors, invalid } = generateCheckResult(values, fns);
+  let dirty = initFormData.dirty;
   let touched = initFormData.touched;
 
   const handleSet = (patchedValues: Partial<V>): void => {
     validateValuesShape(patchedValues);
 
     values = { ...values, ...patchedValues };
-    errors = generateErrors(values, fns);
-    invalid = isFormInvalid(errors);
+
+    const result = generateCheckResult(values, fns);
+    errors = result.errors;
+    invalid = result.invalid;
     touched = true;
   };
 
@@ -57,6 +67,21 @@ const createForm = <V extends Dictionary>(initFormData: InitFormData<V>) => {
       dirty,
       touched,
     });
+  };
+
+  const handleSubmit = (e?: SubmitEvent) => {
+    e && e?.preventDefault();
+
+    return createForm({
+      fns,
+      values,
+      dirty: true,
+      touched,
+    });
+  };
+
+  const handleCheck = (): CheckResult<V> => {
+    return generateCheckResult(values, fns);
   };
 
   return {
@@ -80,7 +105,9 @@ const createForm = <V extends Dictionary>(initFormData: InitFormData<V>) => {
     },
     set: handleSet,
     next: handleNext,
-  } as any;
+    submit: handleSubmit,
+    check: handleCheck,
+  };
 };
 
 export const form = <V extends Dictionary>(initValues: V, initFns: Fns<V> = {}): Form<V> => {

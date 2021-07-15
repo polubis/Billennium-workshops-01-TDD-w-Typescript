@@ -1,5 +1,6 @@
 import { _SIMPLE_USER_, _VALID_USER_, _INVALID_USER_, userBuilder } from './tests.utils';
 import { form } from '..';
+import { SubmitEvent } from '../defs';
 
 describe('form()', () => {
   const testPrimitivesExceptionThrow = (creator: (arg: any) => any): void => {
@@ -10,6 +11,11 @@ describe('form()', () => {
     expect(() => creator(Symbol('') as any)).toThrow();
   };
 
+  const testRefTypesExceptionThrow = (creator: (arg: any) => any): void => {
+    expect(() => form([] as any)).toThrow();
+    expect(() => form(() => '' as any)).toThrow();
+  };
+
   describe('in setup phase', () => {
     describe('throws error for', () => {
       it('primitives', () => {
@@ -17,8 +23,7 @@ describe('form()', () => {
       });
 
       it('all other ref types except object', () => {
-        expect(() => form([] as any)).toThrow();
-        expect(() => form(() => '' as any)).toThrow();
+        testRefTypesExceptionThrow(form);
       });
     });
 
@@ -83,10 +88,7 @@ describe('form()', () => {
         });
 
         it('all other ref types except object', () => {
-          const loginForm = form(_SIMPLE_USER_);
-
-          expect(() => loginForm.set([] as any)).toThrow();
-          expect(() => loginForm.set((() => '') as any)).toThrow();
+          testRefTypesExceptionThrow(form(_SIMPLE_USER_).set);
         });
       });
 
@@ -135,10 +137,7 @@ describe('form()', () => {
         });
 
         it('all other ref types except object', () => {
-          const loginForm = form(_SIMPLE_USER_);
-
-          expect(() => loginForm.next([] as any)).toThrow();
-          expect(() => loginForm.next((() => '') as any)).toThrow();
+          testRefTypesExceptionThrow(form(_SIMPLE_USER_).next);
         });
       });
 
@@ -176,6 +175,59 @@ describe('form()', () => {
         expect(form(userBuilder().valueOf()).next({ username: _USERNAME_ })).not.toEqual(
           form(userBuilder().setUsername(_USERNAME_).valueOf()),
         );
+      });
+    });
+
+    describe('submit()', () => {
+      it('calls prevent defaults method if given', () => {
+        const _SUBMIT_EVENT_: SubmitEvent = { preventDefault: () => {} };
+        const spy = jest.spyOn(_SUBMIT_EVENT_, 'preventDefault');
+
+        form(_SIMPLE_USER_).submit(_SUBMIT_EVENT_);
+
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        jest.clearAllMocks();
+      });
+
+      it('sets invalid property', () => {
+        const loginForm = form(_INVALID_USER_, { username: [(value) => value === ''] });
+
+        expect(loginForm.submit().invalid).toBeTruthy();
+      });
+
+      it('sets errors as object with boolean values', () => {
+        const loginForm = form(_INVALID_USER_, { username: [(value) => value === ''] });
+
+        expect(loginForm.submit().errors).toEqual({
+          username: true,
+          code: false,
+          phone: false,
+        });
+      });
+
+      it('sets dirty property', () => {
+        expect(form({}).submit().dirty).toBeTruthy();
+      });
+
+      it('clones form object', () => {
+        expect(form(userBuilder().valueOf()).submit()).not.toEqual(form(userBuilder().valueOf()));
+      });
+    });
+  });
+
+  describe('check()', () => {
+    it('returns truthy invalid when errors occurs', () => {
+      expect(
+        form(_INVALID_USER_, { username: [(value) => value === ''] }).check().invalid,
+      ).toBeTruthy();
+    });
+
+    it('returns truthy errors when single value is invalid', () => {
+      expect(form(_INVALID_USER_, { username: [(value) => value === ''] }).check().errors).toEqual({
+        username: true,
+        code: false,
+        phone: false,
       });
     });
   });

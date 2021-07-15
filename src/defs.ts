@@ -15,14 +15,21 @@ export type Errors<V extends Dictionary> = {
   [K in keyof V]: boolean;
 };
 
+export interface SubmitEvent {
+  preventDefault: () => void;
+}
+
+export interface CheckResult<V extends Dictionary> {
+  invalid: boolean;
+  errors: Errors<V>;
+}
+
 /*
   Model danych.
 */
-export interface FormData<V extends Dictionary> {
-  errors: Errors<V>;
+export interface FormData<V extends Dictionary> extends CheckResult<V> {
   dirty: boolean;
   fns: Fns<V>;
-  invalid: boolean;
   touched: boolean;
   values: V;
 }
@@ -36,8 +43,8 @@ export interface InitFormData<V extends Dictionary>
 export interface Formable<V extends Dictionary> {
   next(patchedValues: Partial<V>): Form<V>;
   set(patchedValues: Partial<V>): void;
-  submit(): void;
-  check(): any;
+  submit(e?: SubmitEvent): Form<V>;
+  check(): CheckResult<V>;
 }
 
 /*
