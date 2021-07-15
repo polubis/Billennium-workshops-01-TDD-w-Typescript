@@ -524,6 +524,53 @@ Z ciekawszych rzeczy to:
 - Usuwamy rzutowanie na `any` w implementacji. Teraz spełniamy już cały interfejs.
 - Tworzymy pomocniczy interfejs `CheckResult`, który będzie przechowywał stan walidacji.
 
+### (11 commit) Add option to apply other check result algorythms
+
+W tym przypadku użyjemy prostego wzorca `IOC - inversion of control`. Przekażemy funkcje spełniająca konkretny interfejs, która
+będzie miała za zadanie określić wartości `invalid` oraz `errors`. Kod wewnątrz obiektu `form` zajmie się uruchamianiem przekazanej
+funkcji, a my określimy tylko mechanizm wyliczania powyższych wartości.
+
+```ts
+// Definiujemy strategie walidacji
+const booleanStrategy = <V extends Dictionary>(values: V, fns: Fns<V>): CheckResult<V> => {
+  const keys = Object.keys(values);
+
+  const errors = keys.reduce((acc, key): Errors<typeof values> => {
+    const value = values[key];
+    const valueFns = fns[key];
+
+    return {
+      ...acc,
+      [key]: Array.isArray(valueFns) ? valueFns.some((fn) => fn(value)) : false,
+    };
+  }, {} as Errors<V>);
+  const invalid = keys.some((key) => errors[key]);
+
+  return {
+    errors,
+    invalid,
+  };
+};
+
+// Przekazujemy ją do funkcji createForm()
+createForm(
+  {
+    touched: false,
+    dirty: false,
+    values: initValues,
+    fns: initFns,
+  },
+  booleanStrategy,
+);
+```
+
+Dzięki testom jesteśmy w łatwy sposób zweryfikować czy nasz moduł działą tak jak wcześniej. Po tej modyfikacji wszystkie testy przechodzą.
+Pozostaje nam zrobienie jeszcze kilku rzeczy.
+
+- Musimy dodać możliwość zdefiniowania innego typu błędu dla obiektu `errors`. Teraz jest to zawsze `boolean`.
+- Musimy oddelegować mechanizm tworzenia różnych typów formularzu do jakiejś `fabryki` bądź `buildera`.
+- Zrobić integrację z Angularem i Reactem wykorzystując TDD.
+
 ## Podsumowanie
 
 To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.

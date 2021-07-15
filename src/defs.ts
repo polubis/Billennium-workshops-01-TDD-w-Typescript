@@ -19,6 +19,8 @@ export interface SubmitEvent {
   preventDefault: () => void;
 }
 
+export type CheckResultStrategy<V extends Dictionary> = (values: V, fns: Fns<V>) => CheckResult<V>;
+
 export interface CheckResult<V extends Dictionary> {
   invalid: boolean;
   errors: Errors<V>;
