@@ -2,14 +2,18 @@ import { _SIMPLE_USER_, _VALID_USER_, _INVALID_USER_, userBuilder } from './test
 import { form } from '..';
 
 describe('form()', () => {
+  const testPrimitivesExceptionThrow = (creator: (arg: any) => any): void => {
+    expect(() => creator(1 as any)).toThrow();
+    expect(() => creator('' as any)).toThrow();
+    expect(() => creator(null as any)).toThrow();
+    expect(() => creator(undefined as any)).toThrow();
+    expect(() => creator(Symbol('') as any)).toThrow();
+  };
+
   describe('in setup phase', () => {
     describe('throws error for', () => {
       it('primitives', () => {
-        expect(() => form(1 as any)).toThrow();
-        expect(() => form('' as any)).toThrow();
-        expect(() => form(null as any)).toThrow();
-        expect(() => form(undefined as any)).toThrow();
-        expect(() => form(Symbol('') as any)).toThrow();
+        testPrimitivesExceptionThrow(form);
       });
 
       it('all other ref types except object', () => {
@@ -75,13 +79,7 @@ describe('form()', () => {
     describe('set()', () => {
       describe('throws error for', () => {
         it('primitives', () => {
-          const loginForm = form(_SIMPLE_USER_);
-
-          expect(() => loginForm.set(1 as any)).toThrow();
-          expect(() => loginForm.set('' as any)).toThrow();
-          expect(() => loginForm.set(null as any)).toThrow();
-          expect(() => loginForm.set(undefined as any)).toThrow();
-          expect(() => loginForm.set(Symbol('') as any)).toThrow();
+          testPrimitivesExceptionThrow(form(_SIMPLE_USER_).set);
         });
 
         it('all other ref types except object', () => {
@@ -133,13 +131,7 @@ describe('form()', () => {
     describe('next()', () => {
       describe('throws error for', () => {
         it('primitives', () => {
-          const loginForm = form(_SIMPLE_USER_);
-
-          expect(() => loginForm.next(1 as any)).toThrow();
-          expect(() => loginForm.next('' as any)).toThrow();
-          expect(() => loginForm.next(null as any)).toThrow();
-          expect(() => loginForm.next(undefined as any)).toThrow();
-          expect(() => loginForm.next(Symbol('') as any)).toThrow();
+          testPrimitivesExceptionThrow(form(_SIMPLE_USER_).next);
         });
 
         it('all other ref types except object', () => {

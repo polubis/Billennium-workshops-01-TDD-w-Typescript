@@ -446,6 +446,74 @@ const createForm = <V extends Dictionary>(initFormData: InitFormData<V>): Form<V
   tworzy się `closure` zawsze będziemy mieć starą wartość, nawet po jej modyfikacji poprzez funkcję. Żeby tego uniknąć tworzymy getter, który jest funkcją. Chroni nas to również przed czymś takim jak: `form.values = { jakasWartosc: '' }`. W tym przypadku nadpiszemy getter, a nie obiekt wewnątrz funkcji.
 - Również warto zwrócić uwagę na duplikowaną zawartość testów. Można to usprawnić jednak to czy warto i jakie konsekwencje to może mieć sprawdzimy w następnym commicie.
 
+### (9 commit) Compare tests helper functions with typical approach
+
+Możemy pozbyć się duplikacji kodu w testach w następujący sposób:
+
+```ts
+const testErrorThrow = (...args: any[]): void => {
+  // make assertions based on arguments
+};
+```
+
+Jednak zanim zaczniemy przyjrzymy się informacji jaka pojawia się w momencie gdy usuniemy wywołanie funkcji `validateValuesShape`.
+
+```js
+● form() › in setup phase › throws error for
+› all other ref types except object
+
+  expect(received).toThrow()
+
+  Received function did not throw
+
+    14 |
+    15 |       it('all other ref types except object', () => {
+  > 16 |         expect(() => form([] as any)).toThrow();
+```
+
+Komunikat jest całkiem czytelny. Pokazuje nam linie asercji, w której jest problem oraz tytuł testu. Żeby porównać czy warto tworzyć
+funkcje pomocnicze testujące konkretną logikę przyjrzyjmy się poniższemu przykładowi.
+
+```ts
+// Funkcja testująca rzucanie wyjątków dla typów wartościowych
+const testPrimitivesExceptionThrow = (creator: (arg: any) => any): void => {
+  expect(() => creator(1 as any)).toThrow();
+  expect(() => creator('' as any)).toThrow();
+  expect(() => creator(null as any)).toThrow();
+  expect(() => creator(undefined as any)).toThrow();
+  expect(() => creator(Symbol('') as any)).toThrow();
+};
+```
+
+```js
+    5 |   const testPrimitivesExceptionThrow
+= (creator: (arg: any) => any): void => {
+  > 6 |     expect(() => creator(1 as any)).toThrow();
+      |                                     ^      7 |     expect(() => creator('' as any)).toThrow();
+    8 |     expect(() => creator(null as any)).toThrow();
+    9 |     expect(() => creator(undefined as any)).toThrow();
+```
+
+Przed rozpoczęciem refactoru testów i tworzeniem funkcji jak wyżej weż pod uwagę:
+a) Wady:
+
+- Weż pod uwagę dodatkową warstwe abstrakcji, w której możesz się pomylić i spowodować failowanie testów pomimo, iż implementacja jest prawdiłowa.
+- Mniej czytelne komunikaty błędów.
+- Większy próg wejścia dla mniej doświadczonych devów.
+- Ryzyko wywalenia większej liczby testów w razie pomyłki.
+  b) Zalety:
+- Mniej kodu,
+- Testowanie w 100% tego jak coś działa, a nie szczegółów implementacji jest o wiele łatwiejsze. Przykładowo moglibyśmy sobie dodać
+  `jest.fn` i zamockować nasz `set` w obiekcie `form`. Tak naprawdę przetestowali byśmy integrację wewnątrzną komponentu z metodą `set` i to czy
+  jest wywoływana. Jednak w momencie gdy ktoś usunie wywołanie metody `set` i zastąpi to inna - test się wywali.
+- Takie funkcje mogą znacznie skrócić czas pisania testów w przypadku gdy są generyczne.
+
+Jak zawsze decyzja zależy od twoich preferencji oraz projektu. Ja staram się pisać zawsze funckje tego typu chyba, że logika testów jest
+mocno customowa i zmienia się per test. W tym przypadku jednak taka sytuacja nie występuje więc wszystkie assercje sprawdzające rzucanie wyjątków zastąpiłem funkcjami pomocniczymi.
+
+> `jest.fn`, `jest.mock` oraz wszystkie tego typu metody są bardzo pomocne w przypadku testowania integracyjnego. Przykładowo mam jakiś moduł do autoryzacji. Inny moduł, który z niego korzysta nie interesuje to czy moduł autoryzacji działa poprawnie. Ważne jest to, żeby obsłużyć potencjalne API tego modułu i przetestować to czy jest one poprawnie wykorzystywane.
+Tego typu przykłady zobaczymy później podczas pisania `adapterów` do `React` oraz `Angular`.
+
 ## Podsumowanie
 
 To czy TDD jest odpowiednim podejściem dla Ciebie czy od Twój projekt zależy od Ciebie i od projektu. Jednak można zrobić sobie prostą check listę, która powinna być chociaż w połowie spełniona.
