@@ -1,6 +1,8 @@
 # Billennium-workshops-01-TDD-w-Typescript
 
-### Jak uruchomić ?
+Warsztaty wprowadzające w `Test Driven Development` z użyciem `TypeScript`.
+
+### Jak uruchomić przykład ?
 
 `git clone https://github.com/polubis/Billennium-workshops-01-TDD-w-Typescript.git`
 
@@ -18,18 +20,26 @@
 
 ![Yoda](https://a.allegroimg.com/s512/11a091/2511dc3646cab50accf1c3839bb2/Maska-mistrza-YODY-gwiezdne-wojny-STAR-WARS-party)
 
+### Przykładowy test
+
+```ts
+const separate = <T extends { id: string | number }[]>(items: T): string => {
+  return items.map(({ id }) => id).join(',');
+};
+
+describe('separate()', () => {
+  it('creates comma separated id representation', () => {
+    expect(separate({ id: 0 }, { id: 1 })).toBe('0,1');
+  });
+});
+```
+
 ### Co dają testy ?
 
 - Większą odporność na regresje.
 - Łatwiejszy refactor.
 - Ułatwiają utrzymanie aplikacji.
 - Wprowadzają dokumentację do kodu.
-
-### Nie idź ślepo w code coverage
-
-Fajnie jak masz 100% pokrycia kodu testami, ale dobrze jest jak masz i 10%. Ważne, aby na samym początku testować znaczące fragmenty twojego systemu / apki / biblioteki.
-
-![coverage](assets/coverage.png)
 
 ### Konsekwencje pisania testów
 
@@ -95,9 +105,9 @@ const sum = (a: number, b: number): number => a + b;
 - Nowe funkcjonalności.
 - Kiedy kod jest testowalny.
 
-> "Testowalność kodu" to nie wartość tak/nie tylko metryka. Kod jest "testowalny" w jakimś stopniu, a nie "testowalny", albo nie "testowalny".
+> "Testowalność kodu" to nie wartość 0 / 1 tylko metryka. Kod może być łatwiejszy do testowania bądź trudniejszy. To zależy od wielu czynników jak np. ilość zależności w module, ilość odpowiedzialności. 
 
-- Stabliny proces definiowania zakresu funkcjonalności.
+- Stabliny proces definiowania zakresu funkcjonalności (dla testów e2e).
 
 > Tutaj mogą się przydać `scenariusze testowe` od testera manualnego bądź dobrze opisane `user stories`.
 
@@ -111,36 +121,39 @@ const sum = (a: number, b: number): number => a + b;
 
 - Spowolnić development gdy podejście jest nie wystarczająco przećwiczone.
 
-> TDD przu użyciu typescript z opcja `strict` na `true` może być ciężkie. `jest` pokaże testy jako failujące nawet jeżeli implemnetacja logiki będzie poprawna. Dlatego też często podczas używania TDD z `ts` rzutuje się na `any` w celu "uspokojenia" kompilatora `ts` i możliwości testowania czegoś w izolacji. Na sam koniec wyrównuje się typy do docelowych.
+> TDD przu użyciu typescript z opcja `strict` na `true` może być ciężkie. `jest` pokaże testy jako failujące nawet jeżeli implementacja logiki będzie poprawna. Dlatego też często podczas używania TDD z `ts` rzutuje się na `any` w celu "uspokojenia" kompilatora `ts` i możliwości testowania czegoś w izolacji. Na sam koniec wyrównuje się typy do docelowych.
 
 ## Kiedy tworzymy biblioteki ?
 
 Biblioteki tworzymy gdy chcemy:
 
 - Współdzielić kod między aplikacjami/bibliotekami.
-- Zwiększyć performance (fe) - takie bibiolteki można wrzucić w cache na wieki.
+- Zwiększyć performance (fe) - takie biblioteki można wrzucić w cache na wieki.
 - Sprawić, aby rozwiązanie było reużywalne.
-- Zwiększyć enkapsulację i uniemożliwić modyfikowanie kodu.
+- Zwiększyć enkapsulację i uniemożliwić modyfikowanie kodu z innych modułów.
 - Uspójnić kod systemu.
-- Zainwestować nas czas na przyszłość. Takie biblioteki mogą być używane w nowych projektach.
+- Zainwestować nasz czas na przyszłość. Takie biblioteki mogą być używane w nowych projektach.
+- Chcemy przejść na inną technologię. Dzięki odseparowaniu kodu możemy to zrobić etapami.
 
 ### Dlaczego biblioteka od formularzy ?
 
-Ponieważ zarządzanie warstwą walidacji po stronie be/fe oraz pomiędzy różnymi frameworkami fe różni się na tyle, że nie można współdzielić kodu. Jesteśmy niezależni pod tym względem od technologii.
+Ponieważ zarządzanie warstwą walidacji po stronie be/fe oraz pomiędzy różnymi frameworkami fe różni się na tyle, że nie można współdzielić i reużywać kodu. Jesteśmy zależni pod tym względem od technologii.
 
-Przyjmeny model obsługi pól formularzy prezentuje `Angular` i `FormControl`. Będzie to naszą inspiracją jednak zmienimy kilka rzeczy.
+Przyjemny model obsługi pól formularzy prezentuje `FormControl` w `Angular`. Będzie to naszą inspiracją jednak zmienimy kilka rzeczy.
+
+![Lib flow](assets/lib-flow.png)
 
 #### Przykład formularza w React (Yup, Formik)
 
 ```ts
-// VALIDATION SCHEMA
+// Deklaracja modelu walidacji
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
   lastName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
   email: Yup.string().email('Invalid email').required('Required'),
 });
 
-// COMPONENT AND USAGE
+// Użycie
 export const ValidationSchemaExample = () => (
   <div>
     <h1>Signup</h1>
@@ -225,8 +238,8 @@ Musimy spisać założenia oraz stworzyć prototyp API.
 #### Założenia
 
 - **100% typesafe** - raz przekazane wartości mają później zawsze ten sam typ.
-- **cohesion** - biblioteka po każdej zmianie wartości zwraca dokładnie to samo API.
-- **standalone** - biblioteka jest całkowicie standalone.
+- **consistency** - biblioteka po każdej zmianie wartości zwraca dokładnie to samo API.
+- **standalone** - biblioteka jest całkowicie standalone (0 zależności).
 - **low boilerplate** - jak najmniej kodu, ale nie kosztem rozumienia API.
 - **100% immutable** - kompatybilność z frameworkami fe oraz łatwość debugowania.
 - **customizable** - algorytmy walidujące możliwe do dostosowania.
@@ -249,14 +262,20 @@ const loginForm = form(
 loginForm.set({ username: 'd' }); // częściowy update. Modyfikacja tylko propki username
 loginForm.set({ username: 1 }); // TS ERROR invalid type
 
-loginForm.next(); // to samo co set, ale robi kopie
+loginForm.next({ username: 1 }); // to samo co set, ale robi kopie
 
-// React
+// React użycie w klasie
 this.setState((prevState) => ({
   loginForm: prevState.loginForm.next({
     username: e.target.value,
   }),
 }));
+// React użycie w komponencie funkcyjnym
+setFormState((prevFormState) =>
+  prevFormState.next({
+    [name]: value,
+  }),
+);
 ```
 
 ## Implementacja biblioteki
@@ -320,12 +339,12 @@ Setup projektu i instalacja zależności. Linter, code formatter, typescript ora
 ### (11 commit) Add option to apply other check result algorythms
 
 1. Używamy wzorca `IOC - inversion of control` i przekazujemy funkcję, która będzie tworzyć rezultat walidacji.
-2. Dostosowujemy kod mając ciągle uruchomione testy. Z prespektywy funkcjonalności nic się nie zmienia. Poprostu `hard coded` algorytm zostanie teraz przekazany poprzez paremetry.
+2. Dostosowujemy kod mając ciągle uruchomione testy. Z perspektywy funkcjonalności nic się nie zmienia. Poprostu `hard coded` algorytm zostanie teraz przekazany poprzez paremetry.
 3. Tworzymy oraz dostosowujemy modele.
 
 ### (12 commit) Add option to apply generic value for errors object
 
-1. Zmieniamy definicję typów w taki sposób, aby typ rezultatu w obiekcie `errors` mógłbyć określony podczas budowania mechnizmu obsługi formularza.
+1. Zmieniamy definicję typów w taki sposób, aby typ rezultatu w obiekcie `errors` mógł być określony podczas budowania mechnizmu obsługi formularza.
 2. Implementacja wzorca `builder` do budowy modułu od obsługi formularza.
 
 ### (13 commit) Add React facade POC
@@ -536,7 +555,12 @@ class UserForm {
 }
 ```
 
-## Na koniec tipy
+## Quick wins
+
+- Nie idź ślepo w `Code coverage`. To tylko metryka, która pokazuje procent uruchamianego kodu podczas testów. Wcale nie oznacza to, że twoja aplikacja jest bez błędów. Prosto mówiąc wskaźnik ten jest po to żeby dać Ci informacje jaka część twojego kodu bierze udział w testach.
+Nie jest to cel, który trzeba osiągać.
+
+![coverage](assets/coverage.png)
 
 - Na początku przećwicz TDD na prostych funkcjach typu `sum()` aż podejście wejdzie Ci w krew.
 
@@ -569,15 +593,11 @@ const testRefTypesExceptionThrow = (creator: (arg: any) => any): void => {
 };
 ```
 
-## Przykład na żywo
-
 ## Podsumowanie
 
 W artykule przeszliśmy przez proces budowy biblioteki do obsługi formularzy, warstwy ustawiania, walidacji dowolnego modelu.
 
 Jest to prosty przykład ilustrujący proces "myślenia" podczas tworzenia kodu z wykorzystaniem TDD, a nie rozwiązanie produkcyjne gotowe do użycia.
-
-## PS
 
 Testowanie to tylko jedno z wielu narzędzi dbania o jakość naszych rozwiązań. Stosując je z pewnością zauważysz różnice. Jest to inwestycja, która zwraca się zawsze po czasie, tak samo jak `TypeScript`.
 
